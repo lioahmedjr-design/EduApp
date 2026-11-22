@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2a2d31">
+<title>EduApp</title>
+<style>
+:root{--bg:#1d1f22;--surface:#2a2d31;--surface2:#34383d;--line:#3d4248;--ink:#eceff1;--mute:#9ba4ac;--acc:#e53935;--red:#e11919;--red-d:#8f0b0b;--pink:#ffdfe0}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.5 system-ui,-apple-system,Roboto,sans-serif;background:var(--bg);color:var(--ink);-webkit-tap-highlight-color:transparent}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit;padding:0}
+a{color:inherit}
+svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.mute{color:var(--mute)}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#000;color:#fff;padding:10px 16px;border-radius:999px;z-index:99;max-width:90%;font-size:14px}
+.wrap{max-width:640px;margin:0 auto;padding:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:14px;margin-bottom:10px}
+.card.warn{border-color:#f59e0b}
+
+/* ---------- app bar ---------- */
+.appbar{position:fixed;top:0;left:0;right:0;background:var(--surface);border-bottom:1px solid var(--line);z-index:20;padding-top:env(safe-area-inset-top)}
+.abin{max-width:640px;margin:0 auto;height:56px;display:flex;align-items:center;padding:0 4px}
+.ib{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ink);flex:none}
+.ib:active{background:var(--surface2)}
+.ttl{flex:1;font-size:19px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 6px}
+.content{max-width:640px;margin:0 auto;padding:calc(56px + env(safe-area-inset-top) + 16px) 14px calc(56px + env(safe-area-inset-bottom) + 100px)}
+
+/* ---------- bottom tab bar ---------- */
+.tabbar{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);z-index:20;padding-bottom:env(safe-area-inset-bottom)}
+.tbin{max-width:640px;margin:0 auto;display:flex}
+.tb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 7px;color:var(--mute);font-size:12px;font-weight:600}
+.tb.on{color:var(--acc);box-shadow:inset 0 3px 0 var(--acc)}
+
+/* ---------- grid menu (rectangular tiles) ---------- */
+.hello{margin:0 2px 14px}
+.hello b{display:block;font-size:22px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:16px;text-align:left;color:var(--ink);display:flex;flex-direction:column;gap:6px;min-height:124px}
+.tile:active{background:var(--surface2)}
+.tile .ico{color:var(--acc);margin-bottom:6px}
+.tile .ico svg.i{width:32px;height:32px}
+.tile .big{font-size:21px;font-weight:800}
+.tile .sub{font-size:13px;color:var(--mute)}
+
+/* ---------- list rows (rectangular) ---------- */
+.row{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:12px;margin-bottom:8px;color:var(--ink)}
+.row:active{background:var(--surface2)}
+.ibx{width:44px;height:44px;border-radius:4px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--acc);flex:none}
+.tx{flex:1;min-width:0;display:flex;flex-direction:column}
+.nm{font-weight:700;overflow-wrap:anywhere}
+.sb{font-size:13px;color:var(--mute)}
+.chev{color:var(--mute);display:flex}
+.grp{font-size:13px;color:var(--mute);text-transform:uppercase;letter-spacing:.05em;margin:18px 2px 8px;font-weight:700}
+.empty{text-align:center;color:var(--mute);margin:40px 16px}
+
+/* ---------- tab strip + rounded chips ---------- */
+.tabs2{display:flex;border-bottom:1px solid var(--line);margin-bottom:14px}
+.tabs2 button{flex:1;padding:12px 4px;color:var(--mute);font-weight:700;border-bottom:3px solid transparent}
+.tabs2 button.on{color:var(--ink);border-bottom-color:var(--acc)}
+.chips2{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:8px}
+.chip{flex:none;border-radius:999px;background:var(--surface);color:var(--ink);border:1px solid var(--line);padding:8px 14px;font-weight:600;font-size:14px}
+.chip.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.chip.sm{padding:4px 10px;font-size:12px;color:var(--mute)}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:3px 9px;border-radius:999px;background:var(--surface2);color:var(--mute);white-space:nowrap}
+.badge svg.i{width:12px;height:12px}
+.badge.free{background:#1f3d2a;color:#7ee2a0}
+
+/* ---------- round floating button ---------- */
+.fab{position:fixed;right:16px;bottom:calc(56px + env(safe-area-inset-bottom) + 16px);height:56px;padding:0 20px 0 16px;border-radius:28px;background:var(--acc);color:#fff;display:flex;align-items:center;gap:8px;box-shadow:0 6px 16px rgba(0,0,0,.5);z-index:30;font-weight:700}
+
+/* ---------- side menu, 3-dot menu, bottom sheet ---------- */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40;animation:fade .15s}
+.scrim.clear{background:transparent}
+.drawer{position:fixed;top:0;bottom:0;left:0;width:min(82vw,320px);background:var(--surface);z-index:50;display:flex;flex-direction:column;overflow-y:auto;animation:slideIn .2s ease-out;padding-bottom:env(safe-area-inset-bottom)}
+.dh{padding:calc(24px + env(safe-area-inset-top)) 18px 16px;background:var(--surface2);border-bottom:1px solid var(--line);margin-bottom:6px}
+.av{width:52px;height:52px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;margin-bottom:10px}
+.em{font-weight:700;margin-bottom:6px;overflow-wrap:anywhere}
+.di{display:flex;align-items:center;gap:16px;width:100%;padding:14px 18px;color:var(--ink);font-weight:600;text-align:left;text-decoration:none}
+.di svg.i{color:var(--mute)}
+.di.on{background:#3a2e2e}
+.di.on svg.i{color:var(--acc)}
+.hr{height:1px;background:var(--line);margin:6px 0}
+.pop{position:fixed;top:calc(52px + env(safe-area-inset-top));right:8px;min-width:220px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.55);padding:6px 0;animation:fade .12s}
+.pi{display:flex;align-items:center;gap:14px;width:100%;padding:13px 16px;color:var(--ink);font-weight:600;text-align:left}
+.pi svg.i{color:var(--mute)}
+.bsheet{position:fixed;left:0;right:0;bottom:0;max-width:640px;margin:0 auto;background:var(--surface);border-radius:20px 20px 0 0;border-top:1px solid var(--line);z-index:50;padding:10px 20px calc(24px + env(safe-area-inset-bottom));animation:up .22s ease-out}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 16px}
+.bsheet h2{margin:0 0 6px;font-size:20px}
+.bsheet p{margin:0 0 10px}
+.steps{padding-left:20px;margin:10px 0 18px}
+.steps li{margin-bottom:6px}
+.btn-r{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;border-radius:4px;background:var(--acc);color:#fff;font-weight:700;text-decoration:none;margin-bottom:12px}
+.btn-r.alt{background:var(--surface2);border:1px solid var(--line);color:var(--ink)}
+.btn-p{display:block;margin:8px auto 0;padding:10px 30px;border-radius:999px;border:1px solid var(--line);color:var(--ink);font-weight:600}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes slideIn{from{transform:translateX(-100%)}to{transform:none}}
+@keyframes up{from{transform:translateY(100%)}to{transform:none}}
+
+/* ---------- account + reader ---------- */
+.card2{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:16px;margin-bottom:12px}
+.card2.center{text-align:center}
+.card2.center .av{margin:0 auto 10px}
+.card2.info{display:flex;gap:12px;align-items:flex-start;color:var(--mute);font-size:14px}
+.note p{margin:0 0 8px}
+.note h3{margin:16px 0 6px}
+.note li{margin-left:20px;display:list-item}
+
+/* ---------- welcome / sign in / sign up (same look as before) ---------- */
+.pill{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;border:0;border-radius:16px;background:var(--red);color:#fff;font:inherit;font-size:18px;font-weight:700}
+.pill:disabled{opacity:.6}
+.pill.on-dark{background:#ff1a1a;border:2px solid #ffb3b3}
+.pill.light{background:#fff;color:var(--red)}
+.welcome{max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;position:relative;overflow:hidden;background:var(--red-d);color:#fff;display:flex;flex-direction:column;justify-content:flex-end;padding:0 32px calc(120px + env(safe-area-inset-bottom))}
+.welcome svg{position:absolute;inset:0;width:100%;height:100%}
+.welcome .inner{position:relative;z-index:1;text-align:center}
+.welcome h1{font-size:34px;line-height:1.15;font-weight:800;margin:0 0 10px}
+.welcome p{opacity:.95;margin:0 0 28px;font-size:16px}
+.welcome .pill{max-width:260px;margin:0 auto 14px}
+.auth{max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;position:relative;background:var(--pink);overflow:hidden;display:flex;flex-direction:column;color:#1c1f2a}
+.hero{position:relative;height:34vh;min-height:200px;flex:none}
+.hero svg{position:absolute;inset:0;width:100%;height:100%}
+.back{position:absolute;top:calc(14px + env(safe-area-inset-top));left:14px;width:42px;height:42px;border-radius:50%;border:0;background:rgba(255,255,255,.88);color:var(--red-d);font-size:20px;padding:0;z-index:2}
+.sheet{position:relative;flex:1;background:#fff;border-radius:34px 34px 0 0;margin-top:-30px;padding:28px 24px calc(24px + env(safe-area-inset-bottom));box-shadow:0 -6px 24px rgba(143,11,11,.12)}
+.sheet h1{text-align:center;color:var(--red);font-size:30px;font-weight:800;margin:0 0 24px}
+.fl{position:relative;display:block;margin-bottom:20px}
+.fl>span{position:absolute;left:16px;top:-9px;background:#fff;padding:0 6px;font-size:13px;color:#333;z-index:1}
+.fl input{width:100%;padding:15px 16px;border:1.5px solid #cfcfcf;border-radius:14px;background:#fff;color:#111;font:inherit;font-size:16px}
+.fl input:focus{outline:none;border-color:var(--red)}
+.fl input::placeholder{color:#9a9a9a}
+.fl .eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--red);padding:8px 10px;font-size:14px;font-weight:700}
+.agree{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:#444;margin:2px 0 22px}
+.agree input{width:20px;height:20px;accent-color:var(--red);margin:1px 0 0;flex:none}
+.swap{text-align:center;color:#777;font-size:14px;margin:20px 0 0}
+.swap a{color:var(--red);font-weight:700;text-decoration:none}
+.note-msg{background:#fff4e5;border:1px solid #f59e0b;border-radius:12px;padding:10px 12px;margin-bottom:18px;font-size:14px;color:#7a4a00}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="layer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ====== EDIT THESE 5 LINES ======
+const SUPABASE_URL = "https://gqjtxnktvbnznhdvsdgo.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_UrZKra0iGRdrA2aCSoyKbQ_Zf9QxRjA";
+const CONTACT_TEXT = "To unlock everything, contact the admin on Telegram: @your_username";
+const TELEGRAM_USERNAME = "your_username";
+const PAY_TEXT = "Pay the admin by Telebirr or bank transfer.";
+// =================================
+const APP_NAME = "EduApp";
+
+// Default subjects shown under each grade (edit to match the real curriculum).
+// Any subject you upload that is not in this list is added automatically.
+const SUBJECTS_9_10 = ['Mathematics', 'English', 'Amharic', 'Physics', 'Chemistry', 'Biology', 'Geography', 'History', 'Civics', 'Economics', 'ICT'];
+const SUBJECTS_11_12 = ['Mathematics', 'English', 'Physics', 'Chemistry', 'Biology', 'Geography', 'History', 'Economics', 'Civics', 'ICT'];
+const DEFAULT_SUBJECTS = { 9: SUBJECTS_9_10, 10: SUBJECTS_9_10, 11: SUBJECTS_11_12, 12: SUBJECTS_11_12.concat(['Aptitude']) };
+const GRADES = [9, 10, 11, 12];
+
+const $app = document.getElementById('app');
+const $layer = document.getElementById('layer');
+const state = {
+  user: false, deviceId: null, email: '', paid: null, isAdmin: false,
+  items: [], stack: [{ r: 'home' }], examFilter: 'All',
+  drawer: false, menu: false, sheet: null, histInit: false
+};
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+if (typeof supabase === 'undefined' || SUPABASE_URL.indexOf('PASTE_') === 0) {
+  $app.innerHTML = '<div class="wrap"><div class="card warn">Setup needed: put your Supabase URL and anon key at the top of this file (see SETUP.md). If you did, check your internet connection.</div></div>';
+  throw new Error('Not configured');
+}
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+// ---------- Icons (inline, no internet needed) ----------
+const ICONS = {
+  menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+  back: '<path d="M15 5l-7 7 7 7"/>',
+  dots: '<circle cx="12" cy="5" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.7" fill="currentColor" stroke="none"/>',
+  home: '<path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>',
+  shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>',
+  unlock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 017.6-1.7"/>',
+  book: '<path d="M3 5.5C5 4.5 8.5 4.5 12 6.5c3.5-2 7-2 9-1V19c-2-1-5.5-1-9 1-3.5-2-7-2-9-1z"/><path d="M12 6.5V20"/>',
+  note: '<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/>',
+  exam: '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 13l2 2 4-4"/>',
+  download: '<path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>',
+  logout: '<path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9"/>',
+  refresh: '<path d="M20 11a8 8 0 10-2.3 5.7M20 4v7h-7"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
+  chev: '<path d="M9 5l7 7-7 7"/>',
+  star: '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+  cap: '<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/>',
+  send: '<path d="M21 3L3 11l7 3 3 7z"/><path d="M10 14L21 3"/>',
+  phone: '<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
+  math: '<path d="M5 6h14M9 6v13M15 6v8c0 3 1 5 4 5"/>',
+  english: '<path d="M4 5h16v11H9l-5 4z"/><path d="M8.5 12.5L11 8l2.5 4.5M9.3 11.2h3.4"/>',
+  feather: '<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 013 3L8 19z"/><path d="M14 7l3 3"/>',
+  atom: '<circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/><ellipse cx="12" cy="12" rx="9" ry="3.8"/><ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(120 12 12)"/>',
+  flask: '<path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 001.3 2.2h12.4a1.5 1.5 0 001.3-2.2L14 9V3"/><path d="M7.5 15h9"/>',
+  leaf: '<path d="M5 19c0-9 5-14 14-14 0 9-5 14-14 14z"/><path d="M5 19l8-8"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
+  hourglass: '<path d="M6 3h12M6 21h12M7 3c0 5 5 6 5 9s-5 4-5 9M17 3c0 5-5 6-5 9s5 4 5 9"/>',
+  scales: '<path d="M12 4v16M7 20h10M5 8h14"/><path d="M5 8l-3 7a3.5 3.5 0 006 0zM19 8l-3 7a3.5 3.5 0 006 0z"/>',
+  chart: '<path d="M4 20V4M4 20h16"/><path d="M8 15l4-4 3 3 5-6"/>',
+  laptop: '<rect x="5" y="5" width="14" height="10" rx="1.5"/><path d="M3 19h18"/>',
+  bulb: '<path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/>'
+};
+const SUBJECT_ICON = { mathematics: 'math', english: 'english', amharic: 'feather', physics: 'atom', chemistry: 'flask', biology: 'leaf', geography: 'globe', history: 'hourglass', civics: 'scales', economics: 'chart', ict: 'laptop', aptitude: 'bulb' };
+function ic(name) { return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">' + (ICONS[name] || ICONS.book) + '</svg>'; }
+function subjIcon(name) {
+  const k = String(name || '').toLowerCase();
+  const hit = Object.keys(SUBJECT_ICON).find(x => k.indexOf(x) >= 0);
+  return hit ? SUBJECT_ICON[hit] : 'book';
+}
+const kindIcon = k => k === 'book' ? 'book' : (k === 'exam' ? 'exam' : 'note');
+const kindLabel = k => k === 'book' ? 'Textbook' : (k === 'exam' ? 'Past exam' : 'Note');
+
+// ---------- Device ID ----------
+// In the real APK (Capacitor + @capacitor/device) this is the Android device ID.
+// In a plain browser it is a random ID saved in the browser.
+async function getDeviceId() {
+  try {
+    const dev = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Device;
+    if (dev && dev.getId) {
+      const r = await dev.getId();
+      if (r && r.identifier) return 'cap-' + r.identifier;
+    }
+  } catch (e) {}
+  let id = null;
+  try { id = localStorage.getItem('edu_device_id'); } catch (e) {}
+  if (!id) {
+    id = 'web-' + (window.crypto && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36));
+    try { localStorage.setItem('edu_device_id', id); } catch (e) {}
+  }
+  return id;
+}
+
+// ---------- Welcome / Auth artwork (original shapes, red palette) ----------
+function welcomeArt() {
+  return `<svg viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <radialGradient id="gs" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#ff6a6a"/><stop offset="1" stop-color="#5a0505"/></radialGradient>
+      <radialGradient id="gg" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#fff" stop-opacity=".8"/><stop offset="1" stop-color="#fff" stop-opacity=".12"/></radialGradient>
+    </defs>
+    <rect width="400" height="800" fill="#8f0b0b"/>
+    <path d="M400 0V470C330 520 250 470 215 390C175 300 245 240 300 190C345 150 330 70 270 0Z" fill="#ff3b3b"/>
+    <path d="M-10 110C60 70 150 120 175 215C200 310 130 400 60 430C20 448-10 440-10 440Z" fill="#b30f0f"/>
+    <circle cx="55" cy="75" r="52" fill="url(#gs)"/>
+    <circle cx="292" cy="215" r="48" fill="url(#gg)"/>
+    <circle cx="62" cy="775" r="40" fill="#e11919"/>
+    <circle cx="300" cy="795" r="72" fill="url(#gs)" opacity=".92"/>
+  </svg>`;
+}
+function heroArt() {
+  return `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <radialGradient id="hs" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#ff6a6a"/><stop offset="1" stop-color="#5a0505"/></radialGradient>
+      <radialGradient id="hg" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff" stop-opacity=".15"/></radialGradient>
+    </defs>
+    <rect width="400" height="300" fill="#ffdfe0"/>
+    <path d="M400 0V300H175C130 255 160 200 215 165C275 125 250 55 300 0Z" fill="#ff3b3b"/>
+    <path d="M-10 70C60 40 135 80 150 170C162 245 120 300 120 300H-10Z" fill="#a50d0d"/>
+    <circle cx="135" cy="62" r="40" fill="url(#hs)"/>
+    <circle cx="285" cy="120" r="40" fill="url(#hg)"/>
+  </svg>`;
+}
+
+// ---------- Welcome / Auth ----------
+function viewWelcome() {
+  state.user = false;
+  $layer.innerHTML = '';
+  $app.innerHTML = `<div class="welcome">${welcomeArt()}
+    <div class="inner">
+      <h1>Welcome to ${esc(APP_NAME)}</h1>
+      <p>Short notes, textbooks and past EUEE exams for grade 9-12.</p>
+      <button class="pill on-dark" onclick="viewAuth('login')">Sign in <span>&rarr;</span></button>
+      <button class="pill light" onclick="viewAuth('signup')">Sign up <span>&rarr;</span></button>
+    </div></div>`;
+}
+
+function viewAuth(mode, msg) {
+  state.user = false;
+  $layer.innerHTML = '';
+  mode = mode === 'signup' ? 'signup' : 'login';
+  const su = mode === 'signup';
+  $app.innerHTML = `<div class="auth">
+    <div class="hero">${heroArt()}<button type="button" class="back" aria-label="Back" onclick="viewWelcome()">&larr;</button></div>
+    <form class="sheet" onsubmit="submitAuth('${mode}');return false" novalidate>
+      <h1>${su ? 'Get Started' : 'Welcome Back'}</h1>
+      ${msg ? `<div class="note-msg">${esc(msg)}</div>` : ''}
+      ${su ? '<label class="fl"><span>Full name</span><input id="nm" type="text" placeholder="Enter full name" autocomplete="name"></label>' : ''}
+      <label class="fl"><span>Email</span><input id="em" type="email" placeholder="Enter email" autocomplete="username" inputmode="email"></label>
+      <label class="fl"><span>Password</span><input id="pw" type="password" placeholder="${su ? 'Create password' : 'Enter password'}" autocomplete="${su ? 'new-password' : 'current-password'}"><button type="button" class="eye" onclick="togglePw(this)">Show</button></label>
+      ${su ? '<label class="agree"><input id="ag" type="checkbox"><span>I agree to the processing of my personal data</span></label>' : ''}
+      <button id="go" class="pill" type="submit">${su ? 'Sign up' : 'Sign in'} <span>&rarr;</span></button>
+      <p class="swap">${su ? 'Already have an account?' : "Don't have an account?"} <a href="#" onclick="viewAuth('${su ? 'login' : 'signup'}');return false">${su ? 'Sign in' : 'Sign up'}</a></p>
+      <p class="swap" style="margin-top:8px;font-size:13px">One account works on one device only.</p>
+    </form></div>`;
+}
+
+function togglePw(b) {
+  const i = document.getElementById('pw');
+  const show = i.type === 'password';
+  i.type = show ? 'text' : 'password';
+  b.textContent = show ? 'Hide' : 'Show';
+}
+
+async function submitAuth(mode) {
+  const email = document.getElementById('em').value.trim();
+  const password = document.getElementById('pw').value;
+  const nameEl = document.getElementById('nm');
+  const name = nameEl ? nameEl.value.trim() : '';
+  if (mode === 'signup') {
+    if (!name) return toast('Please enter your full name');
+    if (!document.getElementById('ag').checked) return toast('Please tick the agreement to continue');
+  }
+  if (!email || password.length < 6) return toast('Enter your email and a password of 6+ characters');
+  const btn = document.getElementById('go');
+  btn.disabled = true;
+  const res = mode === 'login'
+    ? await sb.auth.signInWithPassword({ email, password })
+    : await sb.auth.signUp({ email, password, options: { data: { full_name: name } } });
+  btn.disabled = false;
+  if (res.error) return toast(res.error.message);
+  if (!res.data.session) return viewAuth('login', 'Account created. Confirm your email, then sign in.');
+  afterLogin();
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  state.items = [];
+  state.stack = [{ r: 'home' }];
+  state.paid = null;
+  state.isAdmin = false;
+  viewWelcome();
+}
+
+async function handleErr(error) {
+  const m = (error && error.message) || 'Something went wrong';
+  if (m.indexOf('wrong_device') >= 0) {
+    await sb.auth.signOut();
+    return viewAuth('login', 'This account is linked to another device. Contact the admin if you changed phones.');
+  }
+  if (m.indexOf('locked') >= 0) return toast('This item is locked');
+  toast(m);
+}
+
+async function afterLogin() {
+  state.deviceId = await getDeviceId();
+  const { data, error } = await sb.rpc('bind_device', { p_device_id: state.deviceId });
+  if (error) return handleErr(error);
+  if (data === 'wrong_device') return handleErr({ message: 'wrong_device' });
+  try {
+    const s = await sb.auth.getSession();
+    state.email = (s && s.data && s.data.session && s.data.session.user) ? (s.data.session.user.email || '') : '';
+  } catch (e) {}
+  state.user = true;
+  state.stack = [{ r: 'home' }];
+  initHistory();
+  await loadIndex();
+}
+
+// ---------- Data ----------
+async function loadIndex() {
+  const { data, error } = await sb.rpc('list_content', { p_device_id: state.deviceId });
+  if (error) return handleErr(error);
+  state.items = data || [];
+  await loadExtras();
+  render();
+}
+
+async function loadExtras() {
+  try {
+    const s = await sb.auth.getSession();
+    const uid = (s && s.data && s.data.session && s.data.session.user) ? s.data.session.user.id : null;
+    if (uid) {
+      const r = await sb.from('profiles').select('is_paid').eq('id', uid).maybeSingle();
+      state.paid = !!(r && r.data && r.data.is_paid);
+    }
+  } catch (e) { state.paid = null; }
+  try {
+    const a = await sb.rpc('is_admin');
+    state.isAdmin = !!(a && a.data === true);
+  } catch (e) { state.isAdmin = false; }
+}
+
+async function refreshAll() {
+  closeOverlays();
+  toast('Refreshing...');
+  await loadIndex();
+}
+
+const same = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
+const hasLocked = () => state.items.some(i => i.locked);
+const isFull = () => state.paid === true || (state.items.length > 0 && !hasLocked());
+const initial = () => (state.email || '?').charAt(0).toUpperCase();
+const cur = () => state.stack[state.stack.length - 1];
+
+function subjectsFor(g) {
+  const base = DEFAULT_SUBJECTS[g] || [];
+  const extra = [];
+  state.items.forEach(i => {
+    if (i.grade === g && i.kind !== 'exam' && !base.some(b => same(b, i.subject)) && !extra.some(e => same(e, i.subject))) extra.push(i.subject);
+  });
+  extra.sort();
+  return base.concat(extra);
+}
+const countFor = (g, s, kind) => state.items.filter(i => i.kind === kind && i.grade === g && same(i.subject, s)).length;
+
+// ---------- Navigation ----------
+function initHistory() {
+  if (state.histInit) return;
+  state.histInit = true;
+  try { history.replaceState({ base: 1 }, ''); history.pushState({ app: 1 }, ''); } catch (e) {}
+}
+window.addEventListener('popstate', () => {
+  if (!state.user) return;
+  if (overlayOpen()) {
+    closeOverlays();
+    try { history.pushState({ app: 1 }, ''); } catch (e) {}
+    return;
+  }
+  if (state.stack.length > 1) { state.stack.pop(); render(); window.scrollTo(0, 0); }
+});
+function go(route) {
+  state.stack.push(route);
+  try { history.pushState({ app: 1 }, ''); } catch (e) {}
+  closeOverlays();
+  render();
+  window.scrollTo(0, 0);
+}
+function back() {
+  if (state.stack.length <= 1) return;
+  try { history.back(); } catch (e) { state.stack.pop(); render(); }
+}
+function resetTo(route) {
+  state.stack = [route];
+  closeOverlays();
+  render();
+  window.scrollTo(0, 0);
+}
+function openGrade(g) { go({ r: 'grade', g }); }
+function openSubject(g, i) { go({ r: 'subject', g, s: subjectsFor(g)[i], tab: 'note' }); }
+function openFree() { go({ r: 'free' }); }
+function setSubTab(t) { cur().tab = t; render(); }
+function setExamFilter(i) { state.examFilter = ['All'].concat(examSubjects())[i] || 'All'; render(); }
+function drawerGo(kind, g) {
+  closeOverlays();
+  if (kind === 'home' || kind === 'exams' || kind === 'account') { state.stack = [{ r: kind }]; render(); window.scrollTo(0, 0); return; }
+  state.stack = [{ r: 'home' }, kind === 'grade' ? { r: 'grade', g } : { r: 'free' }];
+  try { history.pushState({ app: 1 }, ''); } catch (e) {}
+  render();
+  window.scrollTo(0, 0);
+}
+
+// ---------- Overlays: side menu, 3-dot menu, bottom sheet ----------
+const overlayOpen = () => state.drawer || state.menu || !!state.sheet;
+function openDrawer() { state.drawer = true; state.menu = false; state.sheet = null; renderLayer(); }
+function openMenu() { state.menu = true; state.drawer = false; state.sheet = null; renderLayer(); }
+function openUnlock(title) { state.drawer = false; state.menu = false; state.sheet = { type: 'unlock', title: title || '' }; renderLayer(); }
+function openAbout() { state.drawer = false; state.menu = false; state.sheet = { type: 'about' }; renderLayer(); }
+function closeOverlays() { state.drawer = false; state.menu = false; state.sheet = null; renderLayer(); }
+
+function drawerHtml() {
+  const full = isFull(), r = cur();
+  const it = (fn, icon, label, on) => `<button class="di ${on ? 'on' : ''}" onclick="${fn}">${ic(icon)}<span>${esc(label)}</span></button>`;
+  return `<aside class="drawer">
+    <div class="dh"><div class="av">${esc(initial())}</div><div class="em">${esc(state.email || APP_NAME)}</div><span class="badge ${full ? 'free' : ''}">${full ? 'Full access' : 'Free account'}</span></div>
+    ${it("drawerGo('home')", 'home', 'Home', r.r === 'home')}
+    ${GRADES.map(g => it(`drawerGo('grade',${g})`, 'cap', 'Grade ' + g, (r.r === 'grade' || r.r === 'subject') && r.g === g)).join('')}
+    ${it("drawerGo('exams')", 'exam', 'Past EUEE', r.r === 'exams')}
+    ${it("drawerGo('free')", 'star', 'Free samples', r.r === 'free')}
+    <div class="hr"></div>
+    ${full ? '' : it('openUnlock()', 'unlock', 'Unlock full access')}
+    ${state.isAdmin ? `<a class="di" href="admin.html">${ic('shield')}<span>Admin panel</span></a>` : ''}
+    ${it('openAbout()', 'info', 'About')}
+    ${it('logout()', 'logout', 'Log out')}
+  </aside>`;
+}
+function menuHtml() {
+  const pi = (fn, icon, label) => `<button class="pi" onclick="${fn}">${ic(icon)}<span>${label}</span></button>`;
+  return `<div class="pop">${pi('refreshAll()', 'refresh', 'Refresh')}${isFull() ? '' : pi('openUnlock()', 'unlock', 'Unlock full access')}${pi('openAbout()', 'info', 'About')}${pi('logout()', 'logout', 'Log out')}</div>`;
+}
+function sheetHtml() {
+  const s = state.sheet;
+  if (s.type === 'about') {
+    return `<div class="bsheet"><div class="grab"></div>
+      <h2>${esc(APP_NAME)}</h2>
+      <p class="mute">Short notes, textbooks and past EUEE exams for grade 9-12.</p>
+      <p class="mute">Version 1.0</p>
+      <button class="btn-p" onclick="closeOverlays()">Close</button></div>`;
+  }
+  const tg = (TELEGRAM_USERNAME && TELEGRAM_USERNAME.indexOf('your_') !== 0)
+    ? `<a class="btn-r" href="https://t.me/${esc(TELEGRAM_USERNAME)}" target="_blank" rel="noopener">${ic('send')}<span>Message admin on Telegram</span></a>` : '';
+  return `<div class="bsheet"><div class="grab"></div>
+    <h2>${s.title ? esc(s.title) : 'Unlock full access'}</h2>
+    <p>${s.title ? 'This item is part of the full version. ' : ''}Get every note, textbook and past exam.</p>
+    <ol class="steps">
+      <li>${esc(PAY_TEXT)}</li>
+      <li>Send the admin your account email: <b>${esc(state.email)}</b></li>
+      <li>The admin activates your account. Then tap Refresh in the menu.</li>
+    </ol>
+    ${tg}
+    <p class="mute" style="font-size:13px">${esc(CONTACT_TEXT)}</p>
+    <button class="btn-p" onclick="closeOverlays()">Close</button></div>`;
+}
+function renderLayer() {
+  let h = '';
+  if (state.drawer) h = `<div class="scrim" onclick="closeOverlays()"></div>${drawerHtml()}`;
+  else if (state.menu) h = `<div class="scrim clear" onclick="closeOverlays()"></div>${menuHtml()}`;
+  else if (state.sheet) h = `<div class="scrim" onclick="closeOverlays()"></div>${sheetHtml()}`;
+  $layer.innerHTML = h;
+}
+
+// ---------- Screens ----------
+function titleFor(r) {
+  if (r.r === 'grade') return 'Grade ' + r.g;
+  if (r.r === 'subject') return r.s;
+  if (r.r === 'exams') return 'Past EUEE';
+  if (r.r === 'free') return 'Free samples';
+  if (r.r === 'account') return 'Account';
+  if (r.r === 'reader') return r.item.title;
+  return APP_NAME;
+}
+
+function tile(fn, icon, big, sub) {
+  return `<button class="tile" onclick="${fn}"><span class="ico">${ic(icon)}</span><span class="big">${esc(big)}</span><span class="sub">${esc(sub)}</span></button>`;
+}
+function row(fn, icon, name, sub, right) {
+  return `<button class="row" onclick="${fn}"><span class="ibx">${ic(icon)}</span><span class="tx"><span class="nm">${esc(name)}</span><span class="sb">${esc(sub)}</span></span>${right || `<span class="chev">${ic('chev')}</span>`}</button>`;
+}
+function itemRow(i, withSubject, withGrade, noYear) {
+  const meta = [kindLabel(i.kind)];
+  if (withSubject) meta.push(i.subject);
+  if (withGrade && i.grade) meta.push('Grade ' + i.grade);
+  if (i.year && !noYear) meta.push('EUEE ' + i.year);
+  const right = i.locked ? `<span class="badge">${ic('lock')} Locked</span>` : (i.is_free ? '<span class="badge free">FREE</span>' : `<span class="chev">${ic('chev')}</span>`);
+  return row(`openItem('${esc(i.id)}')`, kindIcon(i.kind), i.title, meta.join(' · '), right);
+}
+
+function homeBody() {
+  const cards = GRADES.map(g => tile(`openGrade(${g})`, 'cap', 'Grade ' + g, subjectsFor(g).length + ' subjects'));
+  cards.push(tile("resetTo({r:'exams'})", 'exam', 'Past EUEE', state.items.filter(i => i.kind === 'exam').length + ' papers'));
+  cards.push(tile('openFree()', 'star', 'Free samples', state.items.filter(i => i.is_free).length + ' items'));
+  return `<div class="hello"><b>Choose your grade</b><span class="mute">Notes, textbooks and past exams</span></div><div class="grid">${cards.join('')}</div>`;
+}
+
+function gradeBody(g) {
+  return subjectsFor(g).map((s, idx) => {
+    const n = countFor(g, s, 'note'), b = countFor(g, s, 'book');
+    const parts = [];
+    if (n) parts.push(n + (n === 1 ? ' note' : ' notes'));
+    if (b) parts.push(b + (b === 1 ? ' textbook' : ' textbooks'));
+    return row(`openSubject(${g},${idx})`, subjIcon(s), s, parts.length ? parts.join(' · ') : 'Coming soon');
+  }).join('');
+}
+
+function subjectBody(r) {
+  const tabs = [['note', 'Notes'], ['book', 'Textbook']];
+  if (r.g === 12) tabs.push(['exam', 'Past exams']);
+  const kind = r.tab;
+  let list = state.items.filter(i => i.kind === kind && same(i.subject, r.s) && (kind === 'exam' || i.grade === r.g));
+  if (kind === 'exam') list.sort((a, b) => (b.year || 0) - (a.year || 0));
+  const emptyMsg = kind === 'book' ? 'The textbook for this subject has not been added yet.'
+    : kind === 'exam' ? 'No past exams for this subject yet.'
+    : 'No notes for this subject yet. New material is added regularly.';
+  return `<div class="tabs2">${tabs.map(t => `<button class="${kind === t[0] ? 'on' : ''}" onclick="setSubTab('${t[0]}')">${t[1]}</button>`).join('')}</div>`
+    + (list.length ? list.map(i => itemRow(i, false, false)).join('') : `<p class="empty">${emptyMsg}</p>`);
+}
+
+function examSubjects() {
+  const out = [];
+  state.items.filter(i => i.kind === 'exam').forEach(i => { if (!out.some(o => same(o, i.subject))) out.push(i.subject); });
+  return out.sort();
+}
+function examsBody() {
+  const subs = examSubjects();
+  if (state.examFilter !== 'All' && !subs.some(s => same(s, state.examFilter))) state.examFilter = 'All';
+  const f = state.examFilter;
+  const list = state.items.filter(i => i.kind === 'exam' && (f === 'All' || same(i.subject, f)))
+    .sort((a, b) => (b.year || 0) - (a.year || 0) || String(a.subject).localeCompare(String(b.subject)));
+  const groups = {}, order = [];
+  list.forEach(i => {
+    const g = i.year ? 'EUEE ' + i.year : 'EUEE';
+    if (!groups[g]) { groups[g] = []; order.push(g); }
+    groups[g].push(i);
+  });
+  const chips = ['All'].concat(subs);
+  return `<div class="chips2">${chips.map((c, idx) => `<button class="chip ${same(c, f) ? 'on' : ''}" onclick="setExamFilter(${idx})">${esc(c)}</button>`).join('')}</div>`
+    + (order.length ? order.map(g => `<div class="grp">${esc(g)}</div>` + groups[g].map(i => itemRow(i, true, false, true)).join('')).join('') : '<p class="empty">No past exams yet. They are added regularly.</p>');
+}
+
+function freeBody() {
+  const list = state.items.filter(i => i.is_free);
+  return `<p class="mute" style="margin:0 2px 12px">Open to everyone, no payment needed.</p>`
+    + (list.length ? list.map(i => itemRow(i, true, true)).join('') : '<p class="empty">No free samples yet.</p>');
+}
+
+function accountBody() {
+  const full = isFull();
+  return `<div class="card2 center"><div class="av">${esc(initial())}</div><div class="em">${esc(state.email)}</div>
+      <span class="badge ${full ? 'free' : ''}">${full ? 'Full access' : 'Free account'}</span></div>
+    <div class="card2 info">${ic('phone')}<span>This account is linked to this device. Contact the admin if you change phones.</span></div>
+    ${full ? '' : `<button class="btn-r" onclick="openUnlock()">${ic('unlock')}<span>Unlock full access</span></button>`}
+    <button class="btn-r alt" onclick="logout()">${ic('logout')}<span>Log out</span></button>`;
+}
+
+function readerBody(r) {
+  const it = r.item, row = r.row;
+  const meta = [kindLabel(it.kind), it.subject];
+  if (it.grade) meta.push('Grade ' + it.grade);
+  if (it.year) meta.push('EUEE ' + it.year);
+  const label = it.kind === 'book' ? 'Open textbook (PDF)' : it.kind === 'exam' ? 'Open exam (PDF)' : 'Open PDF';
+  return `<div class="meta">${meta.map(m => `<span class="chip sm">${esc(m)}</span>`).join('')}</div>`
+    + (r.url ? `<a class="btn-r" href="${esc(r.url)}" target="_blank" rel="noopener">${ic('download')}<span>${label}</span></a>` : '')
+    + (row.body ? `<div class="card2 note">${fmt(row.body)}</div>` : '');
+}
+
+function bodyFor(r) {
+  if (r.r === 'grade') return gradeBody(r.g);
+  if (r.r === 'subject') return subjectBody(r);
+  if (r.r === 'exams') return examsBody();
+  if (r.r === 'free') return freeBody();
+  if (r.r === 'account') return accountBody();
+  if (r.r === 'reader') return readerBody(r);
+  return homeBody();
+}
+
+function tabbarHtml(r) {
+  const on = r.r === 'exams' ? 'exams' : (r.r === 'account' ? 'account' : 'home');
+  const t = (id, icon, label) => `<button class="tb ${on === id ? 'on' : ''}" onclick="resetTo({r:'${id}'})">${ic(icon)}<span>${label}</span></button>`;
+  return `<nav class="tabbar"><div class="tbin">${t('home', 'home', 'Home')}${t('exams', 'exam', 'Exams')}${t('account', 'user', 'Account')}</div></nav>`;
+}
+
+function render() {
+  if (!state.user) return;
+  const r = cur();
+  $app.innerHTML = `<header class="appbar"><div class="abin">
+      ${state.stack.length > 1
+        ? `<button class="ib" aria-label="Back" onclick="back()">${ic('back')}</button>`
+        : `<button class="ib" aria-label="Menu" onclick="openDrawer()">${ic('menu')}</button>`}
+      <div class="ttl">${esc(titleFor(r))}</div>
+      <button class="ib" aria-label="More" onclick="openMenu()">${ic('dots')}</button>
+    </div></header>
+    <main class="content">${bodyFor(r)}</main>
+    ${r.r === 'reader' ? '' : tabbarHtml(r)}
+    ${(hasLocked() && r.r !== 'reader' && r.r !== 'account') ? `<button class="fab" aria-label="Unlock" onclick="openUnlock()">${ic('unlock')}<span>Unlock</span></button>` : ''}`;
+  renderLayer();
+}
+
+// ---------- Opening an item ----------
+async function openItem(id) {
+  const it = state.items.find(x => x.id === id);
+  if (!it) return;
+  if (it.locked) return openUnlock(it.title);
+  const { data, error } = await sb.rpc('get_content', { p_id: id, p_device_id: state.deviceId });
+  if (error) return handleErr(error);
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row) return toast('Not found');
+  let url = null;
+  if (row.file_path) {
+    const s = await sb.storage.from('materials').createSignedUrl(row.file_path, 3600);
+    if (s.error) toast('Could not load the PDF'); else url = s.data.signedUrl;
+  }
+  go({ r: 'reader', row, url, item: it });
+}
+
+// tiny formatter: "# heading", "- bullet", **bold**
+function fmt(t) {
+  return esc(t).split('\n').map(l => {
+    if (/^#{1,3} /.test(l)) return '<h3>' + l.replace(/^#{1,3} /, '') + '</h3>';
+    if (/^[-*] /.test(l)) return '<li>' + l.slice(2) + '</li>';
+    if (!l.trim()) return '<br>';
+    return '<p>' + l + '</p>';
+  }).join('').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+}
+
+// ---------- Start ----------
+(async () => {
+  const { data } = await sb.auth.getSession();
+  if (data && data.session) afterLogin(); else viewWelcome();
+})();
+</script>
+</body>
+</html>
