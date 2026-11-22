@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>EduApp Admin</title>
+<style>
+:root{--bg:#f5f6fa;--card:#fff;--ink:#1c1f2a;--mute:#6b7280;--acc:#4f46e5;--line:#e5e7eb;--red:#dc2626}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1117;--card:#181b24;--ink:#eceef4;--mute:#9aa0b0;--acc:#818cf8;--line:#262a36}}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.5 system-ui,-apple-system,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{max-width:720px;margin:0 auto;padding:16px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+h1{font-size:20px;margin:0}
+.mute{color:var(--mute);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+label{display:block;font-size:13px;color:var(--mute);margin:0 0 4px}
+input,select,textarea{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);margin-bottom:10px;font:inherit}
+input[type=checkbox]{width:auto;margin:0 8px 0 0}
+textarea{min-height:160px}
+.row{display:flex;gap:10px}.row>div{flex:1}
+button{padding:10px 14px;border:0;border-radius:10px;background:var(--acc);color:#fff;font:inherit;font-weight:600}
+button.ghost{background:transparent;color:var(--acc);border:1px solid var(--line)}
+button.red{background:var(--red)}
+button:disabled{opacity:.5}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tabs button{flex:1;background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.tabs button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.li{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.li .acts{display:flex;gap:6px;flex-shrink:0}
+.badge{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--line);margin-left:6px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#111;color:#fff;padding:10px 16px;border-radius:10px;z-index:9;max-width:90%}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ====== EDIT THESE 2 LINES (same values as index.html) ======
+const SUPABASE_URL = "https://gqjtxnktvbnznhdvsdgo.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_UrZKra0iGRdrA2aCSoyKbQ_Zf9QxRjA";
+// ============================================================
+
+const $ = id => document.getElementById(id);
+const $app = $('app');
+const st = { rows: [], users: [], editing: null, tab: 'content', q: '' };
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+if (typeof supabase === 'undefined' || SUPABASE_URL.indexOf('PASTE_') === 0) {
+  $app.innerHTML = '<div class="wrap"><div class="card">Setup needed: put your Supabase URL and anon key at the top of this file (see SETUP.md). If you did, check your internet connection.</div></div>';
+  throw new Error('Not configured');
+}
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+function uid() {
+  return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
+
+// ---------- Login (admin only) ----------
+function viewLogin(msg) {
+  $app.innerHTML = `<div class="wrap">
+    <h1 style="margin:32px 0 12px">Admin login</h1>
+    ${msg ? `<div class="card">${esc(msg)}</div>` : ''}
+    <div class="card">
+      <input id="em" type="email" placeholder="Admin email" autocomplete="username">
+      <input id="pw" type="password" placeholder="Password" autocomplete="current-password">
+      <button style="width:100%" onclick="login()">Log in</button>
+    </div></div>`;
+}
+async function login() {
+  const { error } = await sb.auth.signInWithPassword({ email: $('em').value.trim(), password: $('pw').value });
+  if (error) return toast(error.message);
+  checkAdmin();
+}
+async function logout() { await sb.auth.signOut(); viewLogin(); }
+
+async function checkAdmin() {
+  const { data, error } = await sb.rpc('is_admin');
+  if (error || data !== true) {
+    await sb.auth.signOut();
+    return viewLogin('This account is not an admin.');
+  }
+  await loadAll();
+  viewMain();
+}
+
+async function loadAll() {
+  const c = await sb.from('content').select('*').order('created_at', { ascending: false });
+  if (c.error) toast(c.error.message); else st.rows = c.data;
+  const u = await sb.from('profiles').select('*').order('created_at', { ascending: false });
+  if (u.error) toast(u.error.message); else st.users = u.data;
+}
+
+// ---------- Layout ----------
+function viewMain() {
+  $app.innerHTML = `<div class="wrap">
+    <header><h1>EduApp Admin</h1><button class="ghost" onclick="logout()">Log out</button></header>
+    <div class="tabs">
+      <button id="t_content" onclick="showTab('content')">Content</button>
+      <button id="t_users" onclick="showTab('users')">Users</button>
+    </div>
+    <div id="pane"></div></div>`;
+  showTab(st.tab);
+}
+function showTab(t) {
+  st.tab = t;
+  $('t_content').className = t === 'content' ? 'on' : '';
+  $('t_users').className = t === 'users' ? 'on' : '';
+  if (t === 'content') paneContent(); else paneUsers();
+}
+
+// ---------- Content ----------
+const SUBJECTS = ['Mathematics', 'English', 'Physics', 'Chemistry', 'Biology', 'History', 'Geography', 'Civics', 'Economics', 'Aptitude', 'ICT'];
+
+function paneContent() {
+  $('pane').innerHTML = `
+  <div class="card">
+    <h3 id="formTitle" style="margin-top:0">Add new</h3>
+    <div class="row">
+      <div><label>Type</label><select id="f_kind"><option value="note">Short note</option><option value="exam">Past EUEE exam</option></select></div>
+      <div><label>Grade</label><select id="f_grade"><option value="">-</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div>
+      <div><label>Exam year</label><input id="f_year" type="number" placeholder="e.g. 2016"></div>
+    </div>
+    <label>Subject</label>
+    <input id="f_subject" list="subjects" placeholder="Mathematics">
+    <datalist id="subjects">${SUBJECTS.map(s => `<option value="${s}">`).join('')}</datalist>
+    <label>Title</label>
+    <input id="f_title" placeholder="Unit 3: Quadratic equations">
+    <label>Note text (optional for exams). Use "# Heading", "- bullet", **bold**</label>
+    <textarea id="f_body"></textarea>
+    <label>PDF file (optional) <span id="curFile" class="mute"></span></label>
+    <input id="f_file" type="file" accept="application/pdf,.pdf">
+    <label style="display:flex;align-items:center;color:var(--ink);font-size:15px"><input id="f_free" type="checkbox">Free for everyone (pilot taste)</label>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button id="saveBtn" onclick="save()">Save</button>
+      <button class="ghost" onclick="clearForm()">Clear</button>
+    </div>
+  </div>
+  <h3>All content (<span id="count"></span>)</h3>
+  <div id="list"></div>`;
+  renderList();
+}
+
+function renderList() {
+  $('count').textContent = st.rows.length;
+  $('list').innerHTML = st.rows.map(r => `
+    <div class="card li">
+      <div>
+        <b>${esc(r.title)}</b>
+        <div class="mute">${r.kind === 'exam' ? 'EUEE' + (r.year ? ' ' + esc(r.year) : '') : 'Grade ' + esc(r.grade || '-')} &middot; ${esc(r.subject)}
+          ${r.is_free ? '<span class="badge">FREE</span>' : ''}${r.file_path ? '<span class="badge">PDF</span>' : ''}</div>
+      </div>
+      <div class="acts">
+        <button class="ghost" onclick="edit('${esc(r.id)}')">Edit</button>
+        <button class="red" onclick="del('${esc(r.id)}')">Delete</button>
+      </div>
+    </div>`).join('') || '<p class="mute">Nothing uploaded yet.</p>';
+}
+
+function clearForm() {
+  st.editing = null;
+  ['f_grade', 'f_year', 'f_subject', 'f_title', 'f_body', 'f_file'].forEach(id => $(id).value = '');
+  $('f_kind').value = 'note';
+  $('f_free').checked = false;
+  $('curFile').textContent = '';
+  $('formTitle').textContent = 'Add new';
+  $('saveBtn').textContent = 'Save';
+}
+
+function edit(id) {
+  const r = st.rows.find(x => x.id === id);
+  if (!r) return;
+  st.editing = r;
+  $('f_kind').value = r.kind;
+  $('f_grade').value = r.grade || '';
+  $('f_year').value = r.year || '';
+  $('f_subject').value = r.subject;
+  $('f_title').value = r.title;
+  $('f_body').value = r.body || '';
+  $('f_file').value = '';
+  $('f_free').checked = !!r.is_free;
+  $('curFile').textContent = r.file_path ? '(a PDF is attached; choose a new one to replace it)' : '';
+  $('formTitle').textContent = 'Editing';
+  $('saveBtn').textContent = 'Update';
+  window.scrollTo(0, 0);
+}
+
+async function save() {
+  const subject = $('f_subject').value.trim();
+  const title = $('f_title').value.trim();
+  if (!subject || !title) return toast('Subject and title are required');
+
+  const btn = $('saveBtn');
+  btn.disabled = true;
+  try {
+    let file_path = st.editing ? st.editing.file_path : null;
+    const file = $('f_file').files[0];
+    if (file) {
+      const ext = (file.name.split('.').pop() || 'pdf').toLowerCase().replace(/[^a-z0-9]/g, '') || 'pdf';
+      const path = uid() + '.' + ext;
+      const up = await sb.storage.from('materials').upload(path, file, { contentType: file.type || 'application/pdf' });
+      if (up.error) throw up.error;
+      if (file_path) await sb.storage.from('materials').remove([file_path]);
+      file_path = path;
+    }
+    const row = {
+      kind: $('f_kind').value,
+      grade: $('f_grade').value ? Number($('f_grade').value) : null,
+      year: $('f_year').value ? Number($('f_year').value) : null,
+      subject, title,
+      body: $('f_body').value.trim() || null,
+      file_path,
+      is_free: $('f_free').checked
+    };
+    const res = st.editing
+      ? await sb.from('content').update(row).eq('id', st.editing.id)
+      : await sb.from('content').insert(row);
+    if (res.error) throw res.error;
+    toast(st.editing ? 'Updated' : 'Saved');
+    await loadAll();
+    clearForm();
+    renderList();
+  } catch (e) {
+    toast(e.message || 'Save failed');
+  }
+  btn.disabled = false;
+}
+
+async function del(id) {
+  const r = st.rows.find(x => x.id === id);
+  if (!r || !confirm('Delete "' + r.title + '"?')) return;
+  if (r.file_path) await sb.storage.from('materials').remove([r.file_path]);
+  const { error } = await sb.from('content').delete().eq('id', id);
+  if (error) return toast(error.message);
+  await loadAll();
+  renderList();
+}
+
+// ---------- Users ----------
+function paneUsers() {
+  $('pane').innerHTML = `
+    <input id="q" placeholder="Search email" value="${esc(st.q)}" oninput="st.q=this.value;renderUsers()">
+    <div id="ulist"></div>`;
+  renderUsers();
+}
+
+function renderUsers() {
+  const q = st.q.trim().toLowerCase();
+  const list = st.users.filter(u => !q || String(u.email || '').toLowerCase().indexOf(q) >= 0);
+  $('ulist').innerHTML = list.map(u => `
+    <div class="card li">
+      <div>
+        <b>${esc(u.email || u.id)}</b>
+        <div class="mute">${u.is_paid ? 'Paid' : 'Free'} &middot; ${u.device_id ? 'device linked' : 'no device'}</div>
+      </div>
+      <div class="acts">
+        <button onclick="setPaid('${esc(u.id)}',${!u.is_paid})">${u.is_paid ? 'Deactivate' : 'Activate'}</button>
+        <button class="ghost" onclick="resetDevice('${esc(u.id)}')">Reset device</button>
+      </div>
+    </div>`).join('') || '<p class="mute">No users yet.</p>';
+}
+
+async function setPaid(id, val) {
+  const { error } = await sb.from('profiles').update({ is_paid: val }).eq('id', id);
+  if (error) return toast(error.message);
+  await loadAll();
+  renderUsers();
+}
+async function resetDevice(id) {
+  if (!confirm('Let this user log in on a new device?')) return;
+  const { error } = await sb.from('profiles').update({ device_id: null }).eq('id', id);
+  if (error) return toast(error.message);
+  await loadAll();
+  renderUsers();
+}
+
+// ---------- Start ----------
+(async () => {
+  const { data } = await sb.auth.getSession();
+  if (data && data.session) checkAdmin(); else viewLogin();
+})();
+</script>
+</body>
+</html>
