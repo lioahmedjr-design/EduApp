@@ -1,0 +1,3350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Mobile-first viewport setup to prevent horizontal overflow and scale cleanly across devices -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#14161b" id="metaThemeColor" />
+  <title>EduApp — Ethiopian Curriculum (Grades 9–12)</title>
+
+  <!-- Inter Font & Material Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Ethiopic:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+
+  <!-- Supabase JS v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    /* =====================================================================
+       DESIGN SYSTEM: DARK GRAY SURFACES, CRIMSON/CORAL ACCENTS & 90HZ MOTION
+       ===================================================================== */
+    :root {
+      --bg-canvas: #090a0d;
+      --bg-surface: #14161b;
+      --bg-card: #1c1f26;
+      --bg-card-hover: #242832;
+      --bg-input: #101216;
+      --border-subtle: #2d323e;
+      --border-strong: #3b4252;
+
+      --text-primary: #f7f8fa;
+      --text-secondary: #a4acc0;
+      --text-muted: #6f778a;
+
+      --folder-bg: #1a171c;
+      --folder-hover: #23181d;
+      --pill-bg: #23171b;
+      --pill-active-bg: #331920;
+      --pill-active-border: #f87171;
+      --icon-ink: #ffffff;
+      --topbar-bg: #14161b;
+      --tabbar-bg: #14161b;
+      --accent-ink: #fda4af;
+      --pill-active-ink: #ffffff;
+      --danger-ink: #fecaca;
+      --danger-bg: rgba(153, 27, 27, 0.25);
+      --danger-border: rgba(239, 68, 68, 0.5);
+      --ok-ink: #a7f3d0;
+      --ok-bg: rgba(6, 95, 70, 0.25);
+      --ok-border: rgba(16, 185, 129, 0.5);
+      --bg-input-focus: #14171d;
+      --shadow-card: 0 22px 48px rgba(0, 0, 0, 0.52);
+      --shadow-pop: 0 14px 32px rgba(0, 0, 0, 0.55);
+      --backdrop: rgba(0, 0, 0, 0.68);
+      color-scheme: dark;
+      --auth-bg:
+        radial-gradient(circle at 88% 6%, rgba(251, 113, 133, 0.22), transparent 45%),
+        radial-gradient(circle at 10% 24%, rgba(153, 27, 27, 0.42), transparent 55%),
+        linear-gradient(175deg, #1b1014 0%, #14161b 45%, #0e1014 100%);
+
+      --crimson: #dc2626;
+      --crimson-bright: #ef4444;
+      --crimson-dark: #991b1b;
+      --coral: #fb7185;
+      --coral-soft: rgba(251, 113, 133, 0.14);
+      --crimson-glow: rgba(239, 68, 68, 0.34);
+      --crimson-border: rgba(251, 113, 133, 0.42);
+
+      --emerald: #10b981;
+      --amber: #f59e0b;
+
+      --ease-90hz: cubic-bezier(0.2, 0.9, 0.3, 1);
+      --dur-fast: 133ms;
+      --dur-med: 200ms;
+
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+    }
+
+    html[data-theme="light"] {
+      --bg-canvas: #eef1f6;
+      --bg-surface: #f8f9fc;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f3f4f8;
+      --bg-input: #f1f3f8;
+      --border-subtle: #dfe3ec;
+      --border-strong: #c8d0e0;
+
+      --text-primary: #14161b;
+      --text-secondary: #525866;
+      --text-muted: #7c8496;
+
+      --folder-bg: #ffffff;
+      --folder-hover: #fff5f6;
+      --pill-bg: #fff5f6;
+      --pill-active-bg: #ffe4e8;
+      --pill-active-border: #e11d48;
+      --icon-ink: #14161b;
+      --topbar-bg: #f8f9fc;
+      --tabbar-bg: #f8f9fc;
+      --accent-ink: #be123c;
+      --pill-active-ink: #9f1239;
+      --danger-ink: #b91c1c;
+      --danger-bg: rgba(239, 68, 68, 0.1);
+      --danger-border: rgba(220, 38, 38, 0.4);
+      --ok-ink: #047857;
+      --ok-bg: rgba(16, 185, 129, 0.1);
+      --ok-border: rgba(5, 150, 105, 0.4);
+      --bg-input-focus: #ffffff;
+      --shadow-card: 0 10px 28px rgba(20, 22, 27, 0.08);
+      --shadow-pop: 0 10px 26px rgba(20, 22, 27, 0.14);
+      --backdrop: rgba(20, 22, 27, 0.42);
+      color-scheme: light;
+      --auth-bg:
+        radial-gradient(circle at 88% 6%, rgba(251, 113, 133, 0.2), transparent 45%),
+        radial-gradient(circle at 10% 24%, rgba(225, 29, 72, 0.12), transparent 55%),
+        linear-gradient(175deg, #fff5f6 0%, #f8f9fc 50%, #eef1f6 100%);
+
+      --coral-soft: rgba(225, 29, 72, 0.1);
+      --crimson-glow: rgba(225, 29, 72, 0.22);
+      --crimson-border: rgba(225, 29, 72, 0.38);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', 'Noto Sans Ethiopic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Abyssinica SIL', 'Nyala', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      touch-action: pan-x pan-y !important;
+      -ms-touch-action: pan-x pan-y !important;
+      overscroll-behavior-x: none;
+    }
+
+    * {
+      -webkit-text-size-adjust: none;
+      text-size-adjust: none;
+    }
+
+    html, body {
+      background-color: var(--bg-canvas);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    @keyframes enter90Hz {
+      0% {
+        opacity: 0;
+        transform: translate3d(0, 8px, 0) scale(0.99);
+      }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+    }
+
+    .motion-90hz {
+      animation: enter90Hz var(--dur-med) var(--ease-90hz) both;
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 460px;
+      min-height: 100vh;
+      min-height: 100dvh;
+      margin: 0 auto;
+      background-color: var(--bg-surface);
+      border-left: 1px solid var(--border-subtle);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* =====================================================================
+       AUTH VIEW (UNIFIED SIGN IN / SIGN UP + 8-DIGIT OTP + EMAIL/PASSWORD)
+       ===================================================================== */
+    .auth-screen {
+      display: none;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 20px 16px 26px;
+      gap: 16px;
+      background: var(--auth-bg);
+    }
+
+    .auth-screen.active {
+      display: flex;
+    }
+
+    .auth-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .brand-box {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      border-radius: 13px;
+      background: linear-gradient(135deg, var(--coral), var(--crimson));
+      display: grid;
+      place-items: center;
+      color: #ffffff;
+      box-shadow: 0 8px 22px var(--crimson-glow);
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+
+    .brand-subtitle {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .device-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-ink);
+      background: var(--coral-soft);
+      border: 1px solid var(--crimson-border);
+      padding: 6px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .auth-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 18px 16px 20px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .auth-mode-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 16px;
+    }
+
+    .mode-tab {
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 12.5px;
+      font-weight: 700;
+      padding: 9px 10px;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: background var(--dur-fast) var(--ease-90hz), color var(--dur-fast) var(--ease-90hz), transform var(--dur-fast) var(--ease-90hz);
+    }
+
+    .mode-tab.active {
+      background: linear-gradient(135deg, var(--crimson-bright), var(--crimson-dark));
+      color: #ffffff;
+      box-shadow: 0 4px 14px var(--crimson-glow);
+    }
+
+    .mode-tab:active {
+      transform: scale(0.98);
+    }
+
+    .card-heading {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .card-caption {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      line-height: 1.48;
+      margin-bottom: 14px;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 5px;
+    }
+
+    .input-control, .select-control {
+      width: 100%;
+      padding: 11px 13px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-input);
+      color: var(--text-primary);
+      font-size: 13.5px;
+      outline: none;
+      transition: border-color var(--dur-fast) var(--ease-90hz), background var(--dur-fast) var(--ease-90hz);
+    }
+
+    .input-control:focus, .select-control:focus {
+      border-color: var(--coral);
+      background: var(--bg-input-focus);
+    }
+
+    .otp-code-input {
+      text-align: center;
+      letter-spacing: 0.28em;
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .btn-coral {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: linear-gradient(95deg, var(--crimson-bright), var(--coral));
+      color: #ffffff;
+      font-size: 13.5px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 8px 22px var(--crimson-glow);
+      transition: transform var(--dur-fast) var(--ease-90hz), opacity var(--dur-fast) var(--ease-90hz);
+    }
+
+    .btn-coral:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    .btn-coral:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .btn-ghost {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+      font-size: 12.5px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      cursor: pointer;
+      transition: background var(--dur-fast) var(--ease-90hz), border-color var(--dur-fast) var(--ease-90hz), transform var(--dur-fast) var(--ease-90hz);
+    }
+
+    .btn-ghost:active {
+      transform: scale(0.98);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--crimson-border);
+    }
+
+    .alert-box {
+      display: none;
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-size: 12px;
+      line-height: 1.45;
+      margin-bottom: 12px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-input);
+      color: var(--text-primary);
+    }
+
+    .alert-box.show {
+      display: block;
+      animation: enter90Hz var(--dur-fast) var(--ease-90hz) both;
+    }
+
+    .alert-box.error {
+      border-color: var(--danger-border);
+      background: var(--danger-bg);
+      color: var(--danger-ink);
+    }
+
+    .alert-box.success {
+      border-color: var(--ok-border);
+      background: var(--ok-bg);
+      color: var(--ok-ink);
+    }
+
+    .auth-bottom {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      padding-top: 6px;
+    }
+
+    .help-link {
+      color: var(--coral);
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* =====================================================================
+       MAIN APP WORKSPACE (GRADES 9-12, STREAMS, SUBJECT GRID, FILES, ADMIN)
+       ===================================================================== */
+    .main-screen {
+      display: none;
+      flex-direction: column;
+      min-height: 0;
+      flex: 1 1 auto;
+      overflow: hidden;
+      background-color: var(--bg-surface);
+    }
+
+    .main-screen.active {
+      display: flex;
+    }
+
+    /* Page itself never scrolls while signed in: only .scroll-area scrolls,
+       so the top bar and bottom tab bar stay locked in place. */
+    body.main-active {
+      height: 100vh;
+      height: 100dvh;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    body.main-active .app-shell {
+      height: 100vh;
+      height: 100dvh;
+      min-height: 0;
+    }
+
+    .scroll-area {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 25;
+      background: var(--topbar-bg);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 11px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      transform: none !important;
+      transition: none !important;
+      animation: none !important;
+      touch-action: manipulation;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .icon-action {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background var(--dur-fast) var(--ease-90hz), border-color var(--dur-fast) var(--ease-90hz), transform var(--dur-fast) var(--ease-90hz);
+    }
+
+    .icon-action:active {
+      transform: scale(0.94);
+      background: var(--bg-card-hover);
+    }
+
+    .topbar-meta {
+      min-width: 0;
+    }
+
+    .topbar-title-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .topbar-title-row h1 {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .admin-badge {
+      display: none;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: var(--coral-soft);
+      border: 1px solid var(--crimson-border);
+      color: var(--accent-ink);
+    }
+
+    .admin-badge.visible {
+      display: inline-block;
+    }
+
+    .topbar-sub {
+      font-size: 11px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-shrink: 0;
+    }
+
+    .admin-upload-btn {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      padding: 8px 11px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--crimson-border);
+      background: linear-gradient(135deg, var(--crimson-bright), var(--coral));
+      color: #ffffff;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 14px var(--crimson-glow);
+      transition: transform var(--dur-fast) var(--ease-90hz);
+    }
+
+    .admin-upload-btn.visible {
+      display: inline-flex;
+    }
+
+    .admin-upload-btn:active {
+      transform: scale(0.96);
+    }
+
+    .grade-tab-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+    }
+
+    .grade-tab-btn {
+      padding: 9px 6px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      font-size: 12.5px;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      transition: background var(--dur-fast) var(--ease-90hz), color var(--dur-fast) var(--ease-90hz), border-color var(--dur-fast) var(--ease-90hz), transform var(--dur-fast) var(--ease-90hz);
+    }
+
+    .grade-tab-btn.active {
+      background: linear-gradient(135deg, var(--crimson-bright), var(--crimson-dark));
+      border-color: var(--coral);
+      color: #ffffff;
+      box-shadow: 0 5px 15px var(--crimson-glow);
+    }
+
+    .grade-tab-btn:active {
+      transform: none;
+    }
+
+    .stream-tab-bar {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px 14px 4px;
+    }
+
+    .stream-tab-bar.visible {
+      display: flex;
+    }
+
+    .stream-tab-btn {
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--border-subtle);
+      background: var(--pill-bg);
+      color: var(--text-primary);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: background var(--dur-fast) var(--ease-90hz), color var(--dur-fast) var(--ease-90hz), border-color var(--dur-fast) var(--ease-90hz), transform var(--dur-fast) var(--ease-90hz);
+    }
+
+    .stream-tab-btn.active {
+      background: var(--pill-active-bg);
+      border-color: var(--pill-active-border);
+      color: var(--pill-active-ink);
+      box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.22);
+    }
+
+    .stream-tab-btn:active {
+      transform: none;
+    }
+
+    .workspace-body {
+      flex: 1;
+      padding: 14px 14px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .section-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .section-heading {
+      font-size: 12.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-primary);
+    }
+
+    .section-pill {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 3px 9px;
+      border-radius: 999px;
+    }
+
+    .subject-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .subject-tile {
+      background: var(--folder-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 11px 14px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      cursor: pointer;
+      transition: transform var(--dur-fast) var(--ease-90hz), border-color var(--dur-fast) var(--ease-90hz), background var(--dur-fast) var(--ease-90hz);
+    }
+
+    .subject-tile-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .subject-tile:hover {
+      background: var(--folder-hover);
+      border-color: rgba(248, 113, 113, 0.45);
+    }
+
+    .subject-tile:active {
+      transform: scale(0.985);
+    }
+
+    .subject-tile.selected {
+      background: var(--pill-active-bg);
+      border-color: var(--pill-active-border);
+      box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.25);
+    }
+
+    .subject-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+      background: transparent;
+      border: none;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .subject-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.25;
+    }
+
+    .subject-count {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .files-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .file-row {
+      background: var(--folder-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 15px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      transition: background var(--dur-fast) var(--ease-90hz), border-color var(--dur-fast) var(--ease-90hz);
+    }
+
+    .file-row:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--crimson-border);
+    }
+
+    .file-meta-wrap {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+    }
+
+    .file-badge-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      background: var(--coral-soft);
+      border: 1px solid var(--crimson-border);
+      color: var(--coral);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .file-text {
+      min-width: 0;
+    }
+
+    .file-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+
+    .file-sub {
+      font-size: 11px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .stream-page-header {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .stream-page-header.visible {
+      display: flex;
+    }
+
+    .stream-page-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .stream-page-sub {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+    }
+
+    .subfolder-bar {
+      display: none;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 12px;
+    }
+
+    .subfolder-bar.visible {
+      display: flex;
+    }
+
+    .subfolder-chip {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 15px;
+      border: 1px solid var(--border-subtle);
+      background: var(--pill-bg);
+      color: var(--text-primary);
+      font-size: 13.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      cursor: pointer;
+      transition: background var(--dur-fast) var(--ease-90hz), color var(--dur-fast) var(--ease-90hz), border-color var(--dur-fast) var(--ease-90hz), transform var(--dur-fast) var(--ease-90hz);
+    }
+
+    .subfolder-chip-left {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .subfolder-chip.active {
+      background: var(--pill-active-bg);
+      border-color: var(--pill-active-border);
+      color: var(--pill-active-ink);
+    }
+
+    .subfolder-chip:active {
+      transform: scale(0.97);
+    }
+
+    .file-actions-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .open-file-btn {
+      padding: 7px 10px;
+      border-radius: 9px;
+      border: 1px solid var(--crimson-border);
+      background: var(--coral-soft);
+      color: var(--accent-ink);
+      font-size: 11.5px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .delete-file-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      border: 1px solid var(--danger-border);
+      background: var(--danger-bg);
+      color: var(--danger-ink);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background var(--dur-fast) var(--ease-90hz), transform var(--dur-fast) var(--ease-90hz);
+    }
+
+    .delete-file-btn:active {
+      transform: scale(0.94);
+      background: rgba(220, 38, 38, 0.45);
+    }
+
+    .empty-state {
+      background: var(--bg-card);
+      border: 1px dashed var(--border-strong);
+      border-radius: var(--radius-md);
+      padding: 18px 14px;
+      text-align: center;
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .admin-upload-card {
+      display: none;
+      background: var(--bg-card);
+      border: 1px solid var(--crimson-border);
+      border-radius: var(--radius-lg);
+      padding: 16px 14px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .admin-upload-card.open {
+      display: block;
+      animation: enter90Hz var(--dur-med) var(--ease-90hz) both;
+    }
+
+    .bottom-tabbar {
+      position: relative;
+      flex: 0 0 auto;
+      width: 100%;
+      background: var(--tabbar-bg);
+      border-top: 1px solid var(--border-subtle);
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      padding: 8px 6px calc(10px + env(safe-area-inset-bottom, 0px));
+      z-index: 20;
+      transition: none !important;
+      animation: none !important;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .tabbar-item {
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      padding: 2px 0;
+      transition: color var(--dur-fast) var(--ease-90hz), transform var(--dur-fast) var(--ease-90hz);
+    }
+
+    .tabbar-item.active {
+      color: var(--coral);
+    }
+
+    .tabbar-item:active {
+      transform: none;
+    }
+
+    .side-backdrop {
+      position: fixed;
+      inset: 0;
+      background: var(--backdrop);
+      z-index: 50;
+      display: none;
+    }
+
+    .side-backdrop.open {
+      display: block;
+    }
+
+    .side-drawer {
+      position: fixed;
+      top: 0;
+      left: max(0px, calc(50% - 230px));
+      bottom: 0;
+      width: 280px;
+      max-width: 84vw;
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border-subtle);
+      z-index: 60;
+      transform: translate3d(-110%, 0, 0);
+      transition: transform var(--dur-med) var(--ease-90hz);
+      padding: 18px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      will-change: transform;
+    }
+
+    .side-drawer.open {
+      transform: translate3d(0, 0, 0);
+    }
+
+    .drawer-account-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 13px;
+      margin-bottom: 14px;
+    }
+
+    .drawer-account-name {
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 3px;
+      word-break: break-word;
+    }
+
+    .drawer-account-email {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      word-break: break-all;
+    }
+
+    .drawer-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .drawer-nav-btn {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: transparent;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-align: left;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background var(--dur-fast) var(--ease-90hz);
+    }
+
+    .drawer-nav-btn:hover {
+      background: var(--bg-card);
+    }
+
+    .theme-switcher {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 4px;
+      margin-top: 8px;
+      margin-bottom: 14px;
+    }
+
+    .theme-option-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 10px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: background var(--dur-fast) var(--ease-90hz), color var(--dur-fast) var(--ease-90hz);
+    }
+
+    .theme-option-btn.active {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .toast-banner {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translate3d(-50%, -160%, 0);
+      background: var(--bg-card-hover);
+      border: 1px solid var(--crimson-border);
+      color: var(--text-primary);
+      padding: 10px 15px;
+      border-radius: 12px;
+      font-size: 12.5px;
+      font-weight: 600;
+      max-width: 420px;
+      width: calc(100% - 28px);
+      text-align: center;
+      box-shadow: var(--shadow-pop);
+      z-index: 80;
+      transition: transform var(--dur-fast) var(--ease-90hz);
+      will-change: transform;
+    }
+
+    .toast-banner.show {
+      transform: translate3d(-50%, 0, 0);
+    }
+
+    /* ---------- Language menu ---------- */
+    .lang-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 89;
+      display: none;
+    }
+
+    .lang-backdrop.open {
+      display: block;
+    }
+
+    .lang-menu {
+      position: fixed;
+      z-index: 90;
+      min-width: 176px;
+      padding: 6px;
+      border-radius: 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      box-shadow: var(--shadow-pop);
+      display: none;
+    }
+
+    .lang-menu.open {
+      display: block;
+      animation: enter90Hz var(--dur-fast) var(--ease-90hz) both;
+    }
+
+    .lang-option {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px 12px;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--text-primary);
+      font-size: 13.5px;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .lang-option .material-icons-round {
+      font-size: 18px;
+      visibility: hidden;
+    }
+
+    .lang-option.active {
+      background: var(--pill-active-bg);
+      color: var(--pill-active-ink);
+    }
+
+    .lang-option.active .material-icons-round {
+      visibility: visible;
+    }
+
+    .lang-switcher {
+      grid-template-columns: repeat(3, 1fr);
+      margin-bottom: 4px;
+    }
+
+    /* ---------- Show / hide password (eye) ---------- */
+    .password-wrap {
+      position: relative;
+    }
+
+    .password-wrap .input-control {
+      padding-right: 50px;
+    }
+
+    .password-toggle {
+      position: absolute;
+      top: 50%;
+      right: 6px;
+      transform: translateY(-50%);
+      width: 38px;
+      height: 38px;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--text-secondary);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+
+    .password-toggle:active {
+      background: var(--coral-soft);
+      color: var(--coral);
+    }
+
+    .password-toggle .material-icons-round {
+      font-size: 21px;
+    }
+
+    /* ---------- Top bar: keeps Admin badge + 4 buttons from colliding on narrow phones ---------- */
+    .topbar-left {
+      flex: 1 1 0;
+    }
+
+    .topbar-title-row h1,
+    .admin-badge {
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 430px) {
+      .topbar {
+        padding: 10px 12px;
+        gap: 6px;
+      }
+
+      .topbar .icon-action {
+        width: 36px;
+        height: 36px;
+      }
+
+      .topbar-left {
+        gap: 8px;
+      }
+
+      .topbar-right {
+        gap: 6px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .admin-upload-btn > span:last-child {
+        display: none;
+      }
+
+      .admin-upload-btn {
+        padding: 8px 10px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toast-banner" id="toastBanner" role="status" aria-live="polite"></div>
+
+  <div class="lang-backdrop" id="langBackdrop" onclick="closeLangMenu()"></div>
+  <div class="lang-menu" id="langMenu" role="menu" aria-label="Language"></div>
+
+  <div class="app-shell">
+    <!-- ===================================================================
+         AUTH VIEW: DEVICE-ONLY OTP ON NEW SIGN UP + EMAIL/PASSWORD LOGIN
+         =================================================================== -->
+    <section class="auth-screen active motion-90hz" id="authScreen">
+      <div class="auth-top">
+        <div class="brand-box">
+          <div class="brand-mark">
+            <span class="material-icons-round" style="font-size:22px;">school</span>
+          </div>
+          <div>
+            <div class="brand-title">EduApp</div>
+            <div class="brand-subtitle">Ethiopian Curriculum • Grades 9–12</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:7px;">
+          <button type="button" class="icon-action" onclick="toggleLangMenu(event)" aria-label="Language" title="Language">
+            <span class="material-icons-round" style="font-size:19px;">translate</span>
+          </button>
+          <button type="button" class="icon-action" onclick="toggleTheme()" aria-label="Toggle Dark or Light Theme" title="Toggle Theme">
+            <span class="material-icons-round theme-icon-label" style="font-size:19px;">light_mode</span>
+          </button>
+          <div class="device-pill">
+            <span class="material-icons-round" style="font-size:15px;">phonelink_lock</span>
+            <span>1 Device Lock</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="auth-card">
+        <div class="auth-mode-tabs" role="tablist">
+          <button type="button" class="mode-tab active" id="tabSignIn" onclick="setAuthTab('signin')">
+            Sign In
+          </button>
+          <button type="button" class="mode-tab" id="tabSignUp" onclick="setAuthTab('signup')">
+            Sign Up
+          </button>
+        </div>
+
+        <div class="alert-box" id="authAlertBox"></div>
+
+        <div id="signInPanel">
+          <h2 class="card-heading">Sign In</h2>
+          <p class="card-caption">
+            Sign in with your email and password.
+          </p>
+
+          <form id="signInPasswordForm" onsubmit="handlePasswordSignIn(event)">
+            <div class="field">
+              <label class="field-label" for="signInEmail">Email Address</label>
+              <input
+                class="input-control"
+                id="signInEmail"
+                type="text"
+                inputmode="email"
+                placeholder="you@example.com"
+                autocomplete="username"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="signInPassword">Password</label>
+              <input
+                class="input-control"
+                id="signInPassword"
+                type="password"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                required
+              />
+            </div>
+
+            <button type="submit" class="btn-coral" id="signInSubmitBtn">
+              <span class="material-icons-round" style="font-size:18px;">login</span>
+              <span>Sign In</span>
+            </button>
+
+            <div style="text-align:center; margin-top:12px;">
+              <a
+                href="#"
+                class="help-link"
+                id="forgotPasswordLink"
+                onclick="openForgotPanel(event)"
+                style="font-size:12px;"
+              >
+                <span class="material-icons-round" style="font-size:15px;">lock_reset</span>
+                <span>Forgot password?</span>
+              </a>
+            </div>
+          </form>
+        </div>
+
+        <div id="forgotPanel" style="display:none;">
+          <h2 class="card-heading">Reset Password</h2>
+          <p class="card-caption">
+            Enter your email. An 8-digit OTP is shown on this device (no email needed), then you choose a new password.
+          </p>
+
+          <form id="forgotEmailForm" onsubmit="handleForgotSendOtp(event)">
+            <div class="field">
+              <label class="field-label" for="forgotEmail">Email Address</label>
+              <input
+                class="input-control"
+                id="forgotEmail"
+                type="email"
+                placeholder="you@example.com"
+                autocomplete="email"
+                required
+              />
+            </div>
+
+            <button type="submit" class="btn-coral" id="forgotSendOtpBtn">
+              <span class="material-icons-round" style="font-size:18px;">phonelink_lock</span>
+              <span>Send OTP</span>
+            </button>
+          </form>
+
+          <form id="forgotOtpForm" style="display:none; margin-top:14px;" onsubmit="handleForgotVerifyOtp(event)">
+            <div class="field">
+              <label class="field-label" for="forgotOtpInput">Enter 8-Digit Device OTP</label>
+              <input
+                class="input-control otp-code-input"
+                id="forgotOtpInput"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]{8}"
+                maxlength="8"
+                placeholder="00000000"
+                autocomplete="one-time-code"
+                required
+              />
+            </div>
+
+            <button type="submit" class="btn-coral" id="forgotVerifyOtpBtn">
+              <span class="material-icons-round" style="font-size:18px;">verified_user</span>
+              <span>Verify OTP</span>
+            </button>
+          </form>
+
+          <form id="forgotNewPasswordForm" style="display:none; margin-top:14px;" onsubmit="handleForgotSetPassword(event)">
+            <div class="field">
+              <label class="field-label" for="forgotNewPassword">New Password (min. 6 characters)</label>
+              <input
+                class="input-control"
+                id="forgotNewPassword"
+                type="password"
+                minlength="6"
+                placeholder="Enter a new password"
+                autocomplete="new-password"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="forgotConfirmPassword">Confirm New Password</label>
+              <input
+                class="input-control"
+                id="forgotConfirmPassword"
+                type="password"
+                minlength="6"
+                placeholder="Repeat the new password"
+                autocomplete="new-password"
+                required
+              />
+            </div>
+
+            <button type="submit" class="btn-coral" id="forgotSetPasswordBtn">
+              <span class="material-icons-round" style="font-size:18px;">check_circle</span>
+              <span>Save New Password & Login</span>
+            </button>
+          </form>
+
+          <button type="button" class="btn-ghost" style="margin-top:12px;" onclick="setAuthTab('signin')">
+            <span class="material-icons-round" style="font-size:17px;">arrow_back</span>
+            <span>Back to Sign In</span>
+          </button>
+        </div>
+
+        <div id="signUpPanel" style="display:none;">
+          <h2 class="card-heading">Create Account</h2>
+          <p class="card-caption">
+            New user registration sends an 8-digit OTP on this device only (no email needed), then logs you in.
+          </p>
+
+          <form id="signUpDeviceOtpForm" onsubmit="handleSendDeviceOnlyOtp(event)">
+            <div class="field">
+              <label class="field-label" for="signUpEmail">Email Address</label>
+              <input
+                class="input-control"
+                id="signUpEmail"
+                type="email"
+                placeholder="student@example.com"
+                autocomplete="email"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="signUpPassword">Password (min. 6 characters)</label>
+              <input
+                class="input-control"
+                id="signUpPassword"
+                type="password"
+                minlength="6"
+                placeholder="Create a password"
+                autocomplete="new-password"
+                required
+              />
+            </div>
+
+            <button type="submit" class="btn-coral" id="sendOtpBtn">
+              <span class="material-icons-round" style="font-size:18px;">phonelink_lock</span>
+              <span>Send OTP</span>
+            </button>
+          </form>
+
+          <form id="signUpVerifyDeviceOtpForm" style="display:none; margin-top:14px;" onsubmit="handleVerifyDeviceOtpAndLogin(event)">
+            <div class="field">
+              <label class="field-label" for="signUpOtpInput">Enter 8-Digit Device OTP</label>
+              <input
+                class="input-control otp-code-input"
+                id="signUpOtpInput"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]{8}"
+                maxlength="8"
+                placeholder="00000000"
+                autocomplete="one-time-code"
+                required
+              />
+            </div>
+
+            <button type="submit" class="btn-coral" id="verifyOtpBtn">
+              <span class="material-icons-round" style="font-size:18px;">verified_user</span>
+              <span>Verify OTP & Login</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="auth-bottom">
+        <span>Grades 9–12 Ethiopian Curriculum</span>
+        <a class="help-link" href="https://t.me/lioahmedjr" target="_blank" rel="noopener noreferrer">
+          <span class="material-icons-round" style="font-size:16px;">support_agent</span>
+          <span>Customer Service</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         MAIN CURRICULUM SCREEN (STUDENT EXPERIENCE + DUAL ADMIN ACCESS)
+         =================================================================== -->
+    <section class="main-screen" id="mainScreen">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button type="button" class="icon-action" onclick="toggleSideDrawer(true)" aria-label="Open Side Menu">
+            <span class="material-icons-round">menu</span>
+          </button>
+          <div class="topbar-meta">
+            <div class="topbar-title-row">
+              <h1>EduApp</h1>
+              <span class="admin-badge" id="adminRoleBadge">Admin</span>
+            </div>
+            <div class="topbar-sub" id="topbarSessionMeta">Ethiopian Curriculum</div>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button type="button" class="icon-action" onclick="toggleLangMenu(event)" aria-label="Language" title="Language">
+            <span class="material-icons-round" style="font-size:19px;">translate</span>
+          </button>
+          <button type="button" class="icon-action" onclick="toggleTheme()" aria-label="Toggle Dark or Light Theme" title="Toggle Theme">
+            <span class="material-icons-round theme-icon-label" style="font-size:19px;">light_mode</span>
+          </button>
+          <button type="button" class="admin-upload-btn" id="topbarUploadBtn" onclick="toggleUploadCard(true)">
+            <span class="material-icons-round" style="font-size:16px;">cloud_upload</span>
+            <span>Upload</span>
+          </button>
+          <button type="button" class="icon-action" onclick="handleSignOut()" aria-label="Sign Out" title="Sign Out">
+            <span class="material-icons-round" style="font-size:20px; color:var(--coral);">logout</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="scroll-area" id="scrollArea">
+      <nav class="grade-tab-bar" aria-label="Grade Selector Tabs">
+        <button type="button" class="grade-tab-btn" data-grade="9" onclick="setActiveGrade(9)">Grade 9</button>
+        <button type="button" class="grade-tab-btn" data-grade="10" onclick="setActiveGrade(10)">Grade 10</button>
+        <button type="button" class="grade-tab-btn active" data-grade="11" onclick="setActiveGrade(11)">Grade 11</button>
+        <button type="button" class="grade-tab-btn" data-grade="12" onclick="setActiveGrade(12)">Grade 12</button>
+      </nav>
+
+      <div class="stream-tab-bar visible" id="streamTabBar" aria-label="Stream Selector Tabs">
+        <button type="button" class="stream-tab-btn" id="streamNaturalBtn" onclick="setActiveStream('Natural Science')">
+          <span class="material-icons-round" style="font-size:17px;">biotech</span>
+          <span>Natural Science</span>
+        </button>
+        <button type="button" class="stream-tab-btn" id="streamSocialBtn" onclick="setActiveStream('Social Science')">
+          <span class="material-icons-round" style="font-size:17px;">public</span>
+          <span>Social Science</span>
+        </button>
+      </div>
+
+      <div class="stream-page-header" id="streamPageHeader" aria-label="Selected Stream Navigation">
+        <button
+          type="button"
+          id="streamBackArrowBtn"
+          class="icon-action"
+          onclick="clearSelectedStream()"
+          aria-label="Back to Streams"
+          title="Back to Streams"
+        >
+          <span class="material-icons-round">arrow_back</span>
+        </button>
+        <div style="min-width:0; flex:1;">
+          <div class="stream-page-title" id="streamPageTitle">Natural Science</div>
+          <div class="stream-page-sub" id="streamPageSubtitle">Grade 11 • Subjects</div>
+        </div>
+      </div>
+
+      <main class="workspace-body">
+        <section class="admin-upload-card" id="adminUploadCard" aria-label="Admin Curriculum File Upload">
+          <div class="section-top">
+            <h2 class="section-heading" style="color:var(--coral);">Upload Curriculum File</h2>
+            <button type="button" class="icon-action" style="width:30px; height:30px;" onclick="toggleUploadCard(false)" aria-label="Close Upload Panel">
+              <span class="material-icons-round" style="font-size:18px;">close</span>
+            </button>
+          </div>
+
+          <div class="alert-box" id="uploadAlertBox"></div>
+
+          <form id="adminUploadForm" onsubmit="handleCurriculumUpload(event)">
+            <div class="field">
+              <label class="field-label" for="uploadGrade">Grade</label>
+              <select class="select-control" id="uploadGrade" onchange="refreshUploadSubjectOptions()">
+                <option value="9">Grade 9</option>
+                <option value="10">Grade 10</option>
+                <option value="11" selected>Grade 11</option>
+                <option value="12">Grade 12</option>
+              </select>
+            </div>
+
+            <div class="field" id="uploadStreamField">
+              <label class="field-label" for="uploadStream">Stream</label>
+              <select class="select-control" id="uploadStream" onchange="refreshUploadSubjectOptions()">
+                <option value="Natural Science">Natural Science</option>
+                <option value="Social Science">Social Science</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="uploadSubject">Subject</label>
+              <select class="select-control" id="uploadSubject"></select>
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="uploadSubfolder">Sub-Folder</label>
+              <select class="select-control" id="uploadSubfolder">
+                <option value="Book">Book</option>
+                <option value="Short Note" selected>Short Note</option>
+                <option value="Weekly Exam">Weekly Exam</option>
+                <option value="EUEE">EUEE</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="uploadFile">Attach File</label>
+              <input class="input-control" id="uploadFile" type="file" required />
+            </div>
+
+            <button type="submit" class="btn-coral" id="uploadSubmitBtn">
+              <span class="material-icons-round" style="font-size:18px;">cloud_upload</span>
+              <span>Upload to Curriculum Storage</span>
+            </button>
+          </form>
+        </section>
+
+        <section id="subjectsArea">
+          <div class="section-top">
+            <h2 class="section-heading" id="subjectsHeading">Grade 11 • Natural Science</h2>
+            <span class="section-pill" id="subjectsPill">0 Subjects</span>
+          </div>
+          <div class="subject-grid" id="subjectsGrid"></div>
+        </section>
+
+        <section id="subfolderPage" style="display:none;" aria-label="Subject Sub-Folder Page">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid var(--border-subtle);">
+            <button
+              type="button"
+              id="subfolderBackArrowBtn"
+              class="icon-action"
+              onclick="handleSubfolderBack()"
+              aria-label="Back"
+              title="Back"
+            >
+              <span class="material-icons-round">arrow_back</span>
+            </button>
+            <div style="min-width:0; flex:1;">
+              <div id="subfolderPageTitle" style="font-size:16px; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Subject</div>
+              <div id="subfolderPageSubtitle" style="font-size:11.5px; color:var(--text-secondary);">Choose a sub-folder</div>
+            </div>
+          </div>
+        </section>
+
+        <section id="filesArea">
+          <div class="section-top">
+            <h2 class="section-heading" id="filesHeading">Curriculum Materials</h2>
+            <span class="section-pill" id="filesPill">0 Files</span>
+          </div>
+          <div class="subfolder-bar" id="subfolderBar" aria-label="Subject Sub-Folders"></div>
+          <div class="files-stack" id="filesStack"></div>
+        </section>
+      </main>
+      </div>
+
+      <nav class="bottom-tabbar" aria-label="Bottom Navigation">
+        <button type="button" class="tabbar-item active" id="tabbarSubjects" onclick="scrollToWorkspaceSection('subjects')">
+          <span class="material-icons-round" style="font-size:21px;">grid_view</span>
+          <span>Subjects</span>
+        </button>
+        <a class="tabbar-item" href="https://t.me/lioahmedjr" target="_blank" rel="noopener noreferrer">
+          <span class="material-icons-round" style="font-size:21px;">support_agent</span>
+          <span>Customer Service</span>
+        </a>
+      </nav>
+    </section>
+
+    <!-- ===================================================================
+         SIDE NAVIGATION DRAWER (DEVICE ID HIDDEN FROM UI)
+         =================================================================== -->
+    <div class="side-backdrop" id="sideBackdrop" onclick="toggleSideDrawer(false)"></div>
+    <aside class="side-drawer" id="sideDrawer" aria-label="Side Navigation Drawer">
+      <div>
+        <div class="drawer-account-box">
+          <div class="drawer-account-name" id="drawerAccountName">Student</div>
+          <div class="drawer-account-email" id="drawerAccountEmail"></div>
+        </div>
+
+        <div class="drawer-nav">
+          <button type="button" class="drawer-nav-btn" onclick="toggleSideDrawer(false); setActiveGrade(9);">
+            <span class="material-icons-round" style="color:var(--coral);">looks_one</span>
+            <span>Grade 9</span>
+          </button>
+          <button type="button" class="drawer-nav-btn" onclick="toggleSideDrawer(false); setActiveGrade(10);">
+            <span class="material-icons-round" style="color:var(--coral);">looks_two</span>
+            <span>Grade 10</span>
+          </button>
+          <button type="button" class="drawer-nav-btn" onclick="toggleSideDrawer(false); setActiveGrade(11);">
+            <span class="material-icons-round" style="color:var(--coral);">looks_3</span>
+            <span>Grade 11</span>
+          </button>
+          <button type="button" class="drawer-nav-btn" onclick="toggleSideDrawer(false); setActiveGrade(12);">
+            <span class="material-icons-round" style="color:var(--coral);">looks_4</span>
+            <span>Grade 12</span>
+          </button>
+          <button type="button" class="drawer-nav-btn" id="drawerUploadBtn" style="display:none;" onclick="toggleSideDrawer(false); toggleUploadCard(true);">
+            <span class="material-icons-round" style="color:var(--emerald);">cloud_upload</span>
+            <span>Upload Curriculum File</span>
+          </button>
+          <a class="drawer-nav-btn" href="https://t.me/lioahmedjr" target="_blank" rel="noopener noreferrer">
+            <span style="width:24px; height:24px; border-radius:7px; background:var(--coral); color:#14161b; display:inline-grid; place-items:center; flex-shrink:0;">
+              <span class="material-icons-round" style="font-size:15px;">support_agent</span>
+            </span>
+            <span>Customer Service</span>
+          </a>
+        </div>
+
+        <div style="margin-top:14px;">
+          <div class="field-label" style="padding-left:2px;">Appearance Theme</div>
+          <div class="theme-switcher" role="group" aria-label="Theme Selector">
+            <button type="button" class="theme-option-btn active" id="themeDarkBtn" onclick="setTheme('dark')">
+              <span class="material-icons-round" style="font-size:16px;">dark_mode</span>
+              <span>Dark</span>
+            </button>
+            <button type="button" class="theme-option-btn" id="themeLightBtn" onclick="setTheme('light')">
+              <span class="material-icons-round" style="font-size:16px;">light_mode</span>
+              <span>Light</span>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <div class="field-label" style="padding-left:2px;">Language</div>
+          <div class="theme-switcher lang-switcher" role="group" aria-label="Language Selector">
+            <button type="button" class="theme-option-btn" data-lang="en" onclick="setLanguage('en')">English</button>
+            <button type="button" class="theme-option-btn" data-lang="om" onclick="setLanguage('om')">Oromoo</button>
+            <button type="button" class="theme-option-btn" data-lang="am" onclick="setLanguage('am')">አማርኛ</button>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="btn-ghost" onclick="toggleSideDrawer(false); handleSignOut();">
+        <span class="material-icons-round" style="font-size:18px; color:var(--coral);">logout</span>
+        <span>Sign Out</span>
+      </button>
+    </aside>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://gqjtxnktvbnznhdvsdgo.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_UrZKra0iGRdrA2aCSoyKbQ_Zf9QxRjA";
+    const ADMIN_EMAIL = "Lioahmedjr@gmail.com";
+    const CURRICULUM_BUCKET = "curriculum";
+    const DEVICE_KEY = "eduapp_bound_device_id";
+
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const JUNIOR_SUBJECTS = [
+      { name: "Mathematics", icon: "calculate", color: "#60a5fa" },
+      { name: "Chemistry", icon: "science", color: "#34d399" },
+      { name: "Physics", icon: "bolt", color: "#fbbf24" },
+      { name: "Biology", icon: "biotech", color: "#4ade80" },
+      { name: "Geography", icon: "public", color: "#38bdf8" },
+      { name: "History", icon: "account_balance", color: "#fb923c" },
+      { name: "Citizenship Education", icon: "gavel", color: "#f472b6" },
+      { name: "Economics", icon: "trending_up", color: "#facc15" },
+      { name: "English", icon: "translate", color: "#c084fc" }
+    ];
+
+    const SENIOR_STREAMS = {
+      "Natural Science": [
+        { name: "Mathematics", icon: "calculate", color: "#60a5fa" },
+        { name: "Chemistry", icon: "science", color: "#34d399" },
+        { name: "Physics", icon: "bolt", color: "#fbbf24" },
+        { name: "Biology", icon: "biotech", color: "#4ade80" },
+        { name: "English", icon: "translate", color: "#c084fc" }
+      ],
+      "Social Science": [
+        { name: "Mathematics", icon: "calculate", color: "#60a5fa" },
+        { name: "Geography", icon: "public", color: "#38bdf8" },
+        { name: "Economics", icon: "trending_up", color: "#facc15" },
+        { name: "History", icon: "account_balance", color: "#fb923c" },
+        { name: "English", icon: "translate", color: "#c084fc" }
+      ]
+    };
+
+    const CURRICULUM_SUBJECTS = {
+      9: JUNIOR_SUBJECTS,
+      10: JUNIOR_SUBJECTS,
+      11: SENIOR_STREAMS,
+      12: SENIOR_STREAMS
+    };
+
+    const SUBJECT_SUBFOLDERS = ["Book", "Short Note", "Weekly Exam", "EUEE"];
+
+    // Older uploads were saved as "Past EUEE"; treat them as "EUEE".
+    function normalizeSubfolder(value) {
+      const v = String(value || "Short Note").trim();
+      return v === "Past EUEE" ? "EUEE" : v;
+    }
+
+    const appState = {
+      grade: 11,
+      stream: "Natural Science",
+      selectedSubject: null,
+      streamSelected: false,
+      selectedSubfolder: null,
+      showAllFiles: false,
+      profile: null,
+      files: [],
+      realtimeSub: null
+    };
+
+    function escapeText(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    const THEME_STORAGE_KEY = "eduapp_theme_mode";
+
+    function applyTheme(mode) {
+      const normalized = mode === "light" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", normalized);
+      localStorage.setItem(THEME_STORAGE_KEY, normalized);
+      const metaTheme = document.getElementById("metaThemeColor");
+      if (metaTheme) metaTheme.setAttribute("content", normalized === "dark" ? "#14161b" : "#f8f9fc");
+
+      document.querySelectorAll(".theme-icon-label").forEach((iconEl) => {
+        iconEl.textContent = normalized === "dark" ? "light_mode" : "dark_mode";
+      });
+
+      const darkBtn = document.getElementById("themeDarkBtn");
+      const lightBtn = document.getElementById("themeLightBtn");
+      if (darkBtn) darkBtn.classList.toggle("active", normalized === "dark");
+      if (lightBtn) lightBtn.classList.toggle("active", normalized === "light");
+    }
+
+    function setTheme(mode) {
+      applyTheme(mode);
+      showToast(mode === "light" ? "Light theme enabled" : "Dark theme enabled");
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute("data-theme") || "dark";
+      setTheme(current === "dark" ? "light" : "dark");
+    }
+
+    applyTheme(localStorage.getItem(THEME_STORAGE_KEY) || "dark");
+
+    /* =====================================================================
+       LANGUAGES: English / Afaan Oromoo / Amharic
+       Data values (grade, stream, subject, folder) always stay in English in
+       the database; only what the student SEES is translated.
+       ===================================================================== */
+    const LANG_KEY = "eduapp_lang";
+    const LANGS = [
+      { code: "en", label: "English" },
+      { code: "om", label: "Afaan Oromoo" },
+      { code: "am", label: "አማርኛ" }
+    ];
+
+    const I18N = {
+      om: {
+        "Sign In": "Seeni",
+        "Sign Up": "Galmaa'i",
+        "Sign in with your email and password.": "Imeelii fi jecha darbii kee fayyadamuun seeni.",
+        "Email Address": "Teessoo Imeelii",
+        "Password": "Jecha Darbii",
+        "Enter your password": "Jecha darbii kee galchi",
+        "Forgot password?": "Jecha darbii irraanfattee?",
+        "Reset Password": "Jecha Darbii Haaromsi",
+        "Enter your email. An 8-digit OTP is shown on this device (no email needed), then you choose a new password.": "Imeelii kee galchi. OTP lakkoofsa 8 qabu meeshaa kana irratti mul'ata (imeelii hin barbaachisu), achiis jecha darbii haaraa filatta.",
+        "Send OTP": "OTP Ergi",
+        "Enter 8-Digit Device OTP": "OTP Meeshaa Lakkoofsa 8 Galchi",
+        "Verify OTP": "OTP Mirkaneessi",
+        "New Password (min. 6 characters)": "Jecha Darbii Haaraa (xiqqaate qubee 6)",
+        "Enter a new password": "Jecha darbii haaraa galchi",
+        "Confirm New Password": "Jecha Darbii Haaraa Mirkaneessi",
+        "Repeat the new password": "Jecha darbii haaraa deebisii galchi",
+        "Save New Password & Login": "Jecha Darbii Haaraa Olkaa'iitii Seeni",
+        "Back to Sign In": "Gara Seensaatti Deebi'i",
+        "Create Account": "Akaawuntii Uumi",
+        "New user registration sends an 8-digit OTP on this device only (no email needed), then logs you in.": "Galmeessaan fayyadamaa haaraa OTP lakkoofsa 8 meeshaa kana irratti qofa ergama (imeelii hin barbaachisu), ergasii seenta.",
+        "Password (min. 6 characters)": "Jecha Darbii (xiqqaate qubee 6)",
+        "Create a password": "Jecha darbii uumi",
+        "Verify OTP & Login": "OTP Mirkaneessiitii Seeni",
+        "Grades 9–12 Ethiopian Curriculum": "Manni Barnootaa Itoophiyaa Kutaa 9–12",
+        "Ethiopian Curriculum • Grades 9–12": "Manni Barnootaa Itoophiyaa • Kutaa 9–12",
+        "Ethiopian Curriculum": "Manni Barnootaa Itoophiyaa",
+        "Customer Service": "Tajaajila Maamiltootaa",
+        "1 Device Lock": "Cuqaasaa Meeshaa 1",
+        "Admin": "Bulchaa",
+        "Upload": "Olkaa'i",
+        "Natural Science": "Saayinsii Uumamaa",
+        "Social Science": "Saayinsii Hawaasaa",
+        "Upload Curriculum File": "Faayila Manni Barnootaa Olkaa'i",
+        "Grade": "Kutaa",
+        "Stream": "Damee",
+        "Subject": "Gosa Barnootaa",
+        "Sub-Folder": "Foolderii Xiqqaa",
+        "Attach File": "Faayila Maxxansi",
+        "Upload to Curriculum Storage": "Kuusaatti Olkaa'i",
+        "Book": "Kitaaba",
+        "Short Note": "Yaadannoo Gabaabaa",
+        "Weekly Exam": "Qormaata Torbanii",
+        "Mathematics": "Herrega",
+        "Chemistry": "Keemistirii",
+        "Physics": "Fiiziksii",
+        "Biology": "Baayoloojii",
+        "Geography": "Jiyoograafii",
+        "History": "Seenaa",
+        "Citizenship Education": "Barnoota Lammummaa",
+        "Economics": "Ikonoomiksii",
+        "English": "Afaan Ingiliffaa",
+        "Subjects": "Barnoota",
+        "Student": "Barataa",
+        "Sign Out": "Ba'i",
+        "Appearance Theme": "Bifa Mul'ataa",
+        "Dark": "Dukkana",
+        "Light": "Ifa",
+        "Language": "Afaan",
+        "Open": "Bani",
+        "file": "faayila",
+        "files": "faayilota",
+        "File": "Faayila",
+        "Files": "Faayilota",
+        "Sub-Folders": "Foolderiiwwan Xiqqaa",
+        "Folders": "Foolderiiwwan",
+        "Curriculum Materials": "Meeshaalee Manni Barnootaa",
+        "Need help? Reach out at": "Gargaarsa barbaaddaa? Nu quunnamaa:",
+        "Please enter a valid email address.": "Maaloo teessoo imeelii sirrii galchaa.",
+        "Password must be at least 6 characters.": "Jechi darbii xiqqaate qubee 6 ta'uu qaba.",
+        "Device OTP expired or missing. Tap Send OTP again.": "OTP yeroon isaa darbeera ykn hin jiru. Ammas «OTP Ergi» tuqi.",
+        "Device OTP expired or missing. Click Send OTP again.": "OTP yeroon isaa darbeera ykn hin jiru. Ammas «OTP Ergi» tuqi.",
+        "Incorrect 8-digit device OTP. Please check the code shown above.": "OTP lakkoofsa 8 dogoggora. Maaloo koodii olitti mul'atu mirkaneessaa.",
+        "OTP verified. Choose your new password.": "OTP mirkanaa'eera. Jecha darbii haaraa filadhu.",
+        "Please verify the device OTP first.": "Maaloo duraan OTP mirkaneessaa.",
+        "Passwords do not match.": "Jechoonni darbii wal hin madaalan.",
+        "Password updated. Please sign in with your new password.": "Jechi darbii jijjiirameera. Maaloo jecha darbii haaraatiin seenaa.",
+        "Password updated": "Jechi darbii jijjiirameera",
+        "Could not reset password.": "Jecha darbii haaromsuu hin danda'amne.",
+        "Wrong email or password. Please try again, or tap Forgot password.": "Imeelii ykn jechi darbii dogoggora. Maaloo deebi'ii yaalaa, ykn «Jecha darbii irraanfattee?» tuqaa.",
+        "Signed out": "Baatee jirta",
+        "Logged in": "Seenteetta",
+        "Signed in (bound on this device)": "Seenteetta",
+        "Light theme enabled": "Bifti ifaa filatameera",
+        "Dark theme enabled": "Bifti dukkanaa filatameera",
+        "Sending OTP to this device...": "OTP gara meeshaa kanaatti ergamaa jira...",
+        "Device OTP auto-filled:": "OTP meeshaa ofumaan guutameera:",
+        "Tap Verify to continue.": "Itti fufuuf «Mirkaneessi» tuqi.",
+        "Device OTP": "OTP Meeshaa"
+      },
+      am: {
+        "Sign In": "ግባ",
+        "Sign Up": "ተመዝገብ",
+        "Sign in with your email and password.": "በኢሜይልዎ እና በይለፍ ቃልዎ ይግቡ።",
+        "Email Address": "የኢሜይል አድራሻ",
+        "Password": "የይለፍ ቃል",
+        "Enter your password": "የይለፍ ቃልዎን ያስገቡ",
+        "Forgot password?": "የይለፍ ቃል ረስተዋል?",
+        "Reset Password": "የይለፍ ቃል ቀይር",
+        "Enter your email. An 8-digit OTP is shown on this device (no email needed), then you choose a new password.": "ኢሜይልዎን ያስገቡ። ባለ 8 አኃዝ OTP በዚህ መሣሪያ ላይ ይታያል (ኢሜይል አያስፈልግም)፣ ከዚያ አዲስ የይለፍ ቃል ይመርጣሉ።",
+        "Send OTP": "OTP ላክ",
+        "Enter 8-Digit Device OTP": "ባለ 8 አኃዝ የመሣሪያ OTP ያስገቡ",
+        "Verify OTP": "OTP አረጋግጥ",
+        "New Password (min. 6 characters)": "አዲስ የይለፍ ቃል (ቢያንስ 6 ቁምፊዎች)",
+        "Enter a new password": "አዲስ የይለፍ ቃል ያስገቡ",
+        "Confirm New Password": "አዲሱን የይለፍ ቃል ያረጋግጡ",
+        "Repeat the new password": "አዲሱን የይለፍ ቃል ደግመው ያስገቡ",
+        "Save New Password & Login": "አዲስ የይለፍ ቃል አስቀምጥና ግባ",
+        "Back to Sign In": "ወደ መግቢያ ተመለስ",
+        "Create Account": "መለያ ፍጠር",
+        "New user registration sends an 8-digit OTP on this device only (no email needed), then logs you in.": "አዲስ ተጠቃሚ ሲመዘገብ ባለ 8 አኃዝ OTP በዚህ መሣሪያ ላይ ብቻ ይላካል (ኢሜይል አያስፈልግም)፣ ከዚያ ይገባሉ።",
+        "Password (min. 6 characters)": "የይለፍ ቃል (ቢያንስ 6 ቁምፊዎች)",
+        "Create a password": "የይለፍ ቃል ይፍጠሩ",
+        "Verify OTP & Login": "OTP አረጋግጥና ግባ",
+        "Grades 9–12 Ethiopian Curriculum": "የኢትዮጵያ ሥርዓተ ትምህርት ከ9–12ኛ ክፍል",
+        "Ethiopian Curriculum • Grades 9–12": "የኢትዮጵያ ሥርዓተ ትምህርት • 9–12ኛ ክፍል",
+        "Ethiopian Curriculum": "የኢትዮጵያ ሥርዓተ ትምህርት",
+        "Customer Service": "የደንበኞች አገልግሎት",
+        "1 Device Lock": "1 መሣሪያ መቆለፊያ",
+        "Admin": "አስተዳዳሪ",
+        "Upload": "ጫን",
+        "Natural Science": "የተፈጥሮ ሳይንስ",
+        "Social Science": "ማኅበራዊ ሳይንስ",
+        "Upload Curriculum File": "የሥርዓተ ትምህርት ፋይል ጫን",
+        "Grade": "ክፍል",
+        "Stream": "ዘርፍ",
+        "Subject": "የትምህርት ዓይነት",
+        "Sub-Folder": "ንዑስ አቃፊ",
+        "Attach File": "ፋይል ያያይዙ",
+        "Upload to Curriculum Storage": "ወደ ማከማቻ ጫን",
+        "Book": "መጽሐፍ",
+        "Short Note": "አጭር ማስታወሻ",
+        "Weekly Exam": "ሳምንታዊ ፈተና",
+        "Mathematics": "ሂሳብ",
+        "Chemistry": "ኬሚስትሪ",
+        "Physics": "ፊዚክስ",
+        "Biology": "ባዮሎጂ",
+        "Geography": "ጂኦግራፊ",
+        "History": "ታሪክ",
+        "Citizenship Education": "የዜግነት ትምህርት",
+        "Economics": "ኢኮኖሚክስ",
+        "English": "እንግሊዝኛ",
+        "Subjects": "ትምህርቶች",
+        "Student": "ተማሪ",
+        "Sign Out": "ውጣ",
+        "Appearance Theme": "የገጽታ ዓይነት",
+        "Dark": "ጨለማ",
+        "Light": "ብርሃን",
+        "Language": "ቋንቋ",
+        "Open": "ክፈት",
+        "file": "ፋይል",
+        "files": "ፋይሎች",
+        "File": "ፋይል",
+        "Files": "ፋይሎች",
+        "Sub-Folders": "ንዑስ አቃፊዎች",
+        "Folders": "አቃፊዎች",
+        "Curriculum Materials": "የሥርዓተ ትምህርት ቁሳቁሶች",
+        "Need help? Reach out at": "እገዛ ይፈልጋሉ? ያግኙን፦",
+        "Please enter a valid email address.": "እባክዎ ትክክለኛ የኢሜይል አድራሻ ያስገቡ።",
+        "Password must be at least 6 characters.": "የይለፍ ቃል ቢያንስ 6 ቁምፊዎች መሆን አለበት።",
+        "Device OTP expired or missing. Tap Send OTP again.": "OTP ጊዜው አልፎበታል ወይም የለም። እንደገና «OTP ላክ» ይንኩ።",
+        "Device OTP expired or missing. Click Send OTP again.": "OTP ጊዜው አልፎበታል ወይም የለም። እንደገና «OTP ላክ» ይንኩ።",
+        "Incorrect 8-digit device OTP. Please check the code shown above.": "የተሳሳተ ባለ 8 አኃዝ OTP። እባክዎ ከላይ የሚታየውን ኮድ ያረጋግጡ።",
+        "OTP verified. Choose your new password.": "OTP ተረጋግጧል። አዲስ የይለፍ ቃልዎን ይምረጡ።",
+        "Please verify the device OTP first.": "እባክዎ መጀመሪያ OTP ያረጋግጡ።",
+        "Passwords do not match.": "የይለፍ ቃሎቹ አይመሳሰሉም።",
+        "Password updated. Please sign in with your new password.": "የይለፍ ቃል ተቀይሯል። እባክዎ በአዲሱ የይለፍ ቃል ይግቡ።",
+        "Password updated": "የይለፍ ቃል ተቀይሯል",
+        "Could not reset password.": "የይለፍ ቃል መቀየር አልተቻለም።",
+        "Wrong email or password. Please try again, or tap Forgot password.": "ኢሜይል ወይም የይለፍ ቃል ተሳስቷል። እባክዎ እንደገና ይሞክሩ ወይም «የይለፍ ቃል ረስተዋል?» ይንኩ።",
+        "Signed out": "ወጥተዋል",
+        "Logged in": "ገብተዋል",
+        "Signed in (bound on this device)": "ገብተዋል",
+        "Light theme enabled": "ብርሃን ገጽታ ተመርጧል",
+        "Dark theme enabled": "ጨለማ ገጽታ ተመርጧል",
+        "Sending OTP to this device...": "OTP ወደዚህ መሣሪያ በመላክ ላይ...",
+        "Device OTP auto-filled:": "የመሣሪያ OTP ተሞልቷል፦",
+        "Tap Verify to continue.": "ለመቀጠል «አረጋግጥ» ይንኩ።",
+        "Device OTP": "የመሣሪያ OTP"
+      }
+    };
+
+    [9, 10, 11, 12].forEach((n) => {
+      I18N.om[`Grade ${n}`] = `Kutaa ${n}`;
+      I18N.am[`Grade ${n}`] = `${n}ኛ ክፍል`;
+    });
+
+    let currentLang = "en";
+    try {
+      const savedLang = localStorage.getItem(LANG_KEY);
+      if (LANGS.some((l) => l.code === savedLang)) currentLang = savedLang;
+    } catch (_) {}
+
+    function t(text) {
+      if (currentLang === "en") return text;
+      const dict = I18N[currentLang];
+      return (dict && dict[text]) || text;
+    }
+
+    function tGrade(n) {
+      if (currentLang === "am") return `${n}ኛ ክፍል`;
+      if (currentLang === "om") return `Kutaa ${n}`;
+      return `Grade ${n}`;
+    }
+
+    function tNoFiles(place) {
+      if (currentLang === "am") return `ለ${place} እስካሁን ምንም ፋይል አልተጫነም።`;
+      if (currentLang === "om") return `${place} faayilli ammaaf hin olkaa'amne.`;
+      return `No files uploaded yet for ${place}.`;
+    }
+
+    // Containers whose text is written by JS (re-rendered on language change).
+    const I18N_SKIP = "script, style, .material-icons-round, #authAlertBox, #uploadAlertBox, #toastBanner, #subjectsGrid, #filesStack, #subfolderBar, #subjectsHeading, #subjectsPill, #filesHeading, #filesPill, #streamPageTitle, #streamPageSubtitle, #subfolderPageTitle, #subfolderPageSubtitle, #topbarSessionMeta, #drawerAccountName, #drawerAccountEmail, #uploadSubject, #langMenu, [data-lang]";
+
+    function translateDom() {
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+        acceptNode(node) {
+          const parent = node.parentElement;
+          if (!parent || parent.closest(I18N_SKIP)) return NodeFilter.FILTER_REJECT;
+          return node.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        }
+      });
+
+      const nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+
+      nodes.forEach((node) => {
+        if (node.__en === undefined) node.__en = node.nodeValue;
+        const lead = node.__en.match(/^\s*/)[0];
+        const trail = node.__en.match(/\s*$/)[0];
+        const key = node.__en.trim().replace(/\s+/g, " ");
+        node.nodeValue = lead + t(key) + trail;
+      });
+
+      document.querySelectorAll("[placeholder]").forEach((el) => {
+        if (el.__enPh === undefined) el.__enPh = el.getAttribute("placeholder");
+        el.setAttribute("placeholder", t(el.__enPh));
+      });
+    }
+
+    function refreshAccountTexts() {
+      const profile = appState.profile;
+      if (!profile) return;
+      const isAdmin = profile.role === "admin";
+      document.getElementById("topbarSessionMeta").textContent = profile.email || profile.full_name || "EduApp";
+      document.getElementById("drawerAccountName").textContent = profile.full_name || t(isAdmin ? "Admin" : "Student");
+      document.getElementById("drawerAccountEmail").textContent = profile.email || "";
+    }
+
+    function applyLanguage(code) {
+      currentLang = LANGS.some((l) => l.code === code) ? code : "en";
+      try { localStorage.setItem(LANG_KEY, currentLang); } catch (_) {}
+      document.documentElement.setAttribute("lang", currentLang);
+
+      translateDom();
+
+      document.querySelectorAll("[data-lang]").forEach((el) => {
+        el.classList.toggle("active", el.dataset.lang === currentLang);
+      });
+
+      ["authAlertBox", "uploadAlertBox"].forEach((id) => {
+        const box = document.getElementById(id);
+        if (box && box.__msg) box.textContent = typeof box.__msg === "function" ? box.__msg() : t(box.__msg);
+      });
+
+      if (appState.profile) {
+        refreshAccountTexts();
+        const uploadSubject = document.getElementById("uploadSubject");
+        const keep = uploadSubject.value;
+        refreshUploadSubjectOptions();
+        if (keep) uploadSubject.value = keep;
+        syncSubfolderPageVisibility();
+        renderSubjectGrid();
+        renderCurriculumFiles();
+      }
+    }
+
+    /* ---------- Show / hide password (eye icon on every password field) ---------- */
+    function enhancePasswordFields() {
+      document.querySelectorAll('input[type="password"]').forEach((input) => {
+        if (input.dataset.eye) return;
+        input.dataset.eye = "1";
+
+        const wrap = document.createElement("div");
+        wrap.className = "password-wrap";
+        input.parentNode.insertBefore(wrap, input);
+        wrap.appendChild(input);
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "password-toggle";
+        btn.setAttribute("aria-label", "Show password");
+        btn.innerHTML = '<span class="material-icons-round">visibility</span>';
+
+        // keep the keyboard open and the cursor in place while tapping the eye
+        btn.addEventListener("pointerdown", (e) => e.preventDefault());
+        btn.addEventListener("click", () => {
+          const show = input.type === "password";
+          const start = input.selectionStart;
+          const end = input.selectionEnd;
+          input.type = show ? "text" : "password";
+          btn.firstChild.textContent = show ? "visibility_off" : "visibility";
+          btn.setAttribute("aria-label", show ? "Hide password" : "Show password");
+          input.focus();
+          try { input.setSelectionRange(start, end); } catch (_) {}
+        });
+
+        wrap.appendChild(btn);
+      });
+    }
+
+    function resetPasswordVisibility() {
+      document.querySelectorAll(".password-wrap").forEach((wrap) => {
+        const input = wrap.querySelector("input");
+        const icon = wrap.querySelector(".password-toggle .material-icons-round");
+        if (input) input.type = "password";
+        if (icon) icon.textContent = "visibility";
+      });
+    }
+
+    function renderLangMenu() {
+      document.getElementById("langMenu").innerHTML = LANGS.map((l) => `
+        <button type="button" class="lang-option ${l.code === currentLang ? "active" : ""}" data-lang="${l.code}" role="menuitem" onclick="setLanguage('${l.code}')">
+          <span>${l.label}</span>
+          <span class="material-icons-round">check</span>
+        </button>
+      `).join("");
+    }
+
+    function toggleLangMenu(event) {
+      event.stopPropagation();
+      const menu = document.getElementById("langMenu");
+      const backdrop = document.getElementById("langBackdrop");
+      if (menu.classList.contains("open")) {
+        closeLangMenu();
+        return;
+      }
+      const rect = event.currentTarget.getBoundingClientRect();
+      menu.classList.add("open");
+      backdrop.classList.add("open");
+      const width = menu.offsetWidth;
+      const left = Math.max(8, Math.min(window.innerWidth - width - 8, rect.right - width));
+      menu.style.top = `${rect.bottom + 8}px`;
+      menu.style.left = `${left}px`;
+    }
+
+    function closeLangMenu() {
+      document.getElementById("langMenu").classList.remove("open");
+      document.getElementById("langBackdrop").classList.remove("open");
+    }
+
+    function setLanguage(code) {
+      closeLangMenu();
+      applyLanguage(code);
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeLangMenu();
+    });
+
+    function showToast(msg) {
+      const el = document.getElementById("toastBanner");
+      el.textContent = t(msg);
+      el.classList.add("show");
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
+    }
+
+    function setAlert(boxId, message, kind = "") {
+      const box = document.getElementById(boxId);
+      if (!message) {
+        box.textContent = "";
+        box.className = "alert-box";
+        box.__msg = null;
+        return;
+      }
+      box.__msg = message;
+      box.textContent = typeof message === "function" ? message() : t(message);
+      box.className = `alert-box show ${kind}`.trim();
+    }
+
+    /* ---------- Device OTP: shown on this device, auto-filled after 2 seconds ---------- */
+    let otpFillTimer = null;
+
+    function cancelOtpAutoFill() {
+      clearTimeout(otpFillTimer);
+      otpFillTimer = null;
+    }
+
+    function resetOtpButtons() {
+      ["sendOtpBtn", "verifyOtpBtn", "forgotSendOtpBtn", "forgotVerifyOtpBtn"].forEach((id) => {
+        const btn = document.getElementById(id);
+        if (btn) btn.disabled = false;
+      });
+    }
+
+    function scheduleOtpAutoFill({ code, input, verifyBtn, sendBtn, isCurrent }) {
+      cancelOtpAutoFill();
+      input.value = "";
+      verifyBtn.disabled = true;
+      if (sendBtn) sendBtn.disabled = true;
+      setAlert("authAlertBox", "Sending OTP to this device...");
+
+      otpFillTimer = setTimeout(() => {
+        otpFillTimer = null;
+        if (sendBtn) sendBtn.disabled = false;
+        if (!isCurrent()) return;
+        input.value = code;
+        verifyBtn.disabled = false;
+        verifyBtn.focus();
+        setAlert("authAlertBox", () => `${t("Device OTP auto-filled:")} ${code} — ${t("Tap Verify to continue.")}`, "success");
+        showToast(`${t("Device OTP")}: ${code}`);
+      }, 2000);
+    }
+
+    function isValidEmailAddress(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(email || "").trim().toLowerCase());
+    }
+
+    function resolveDeviceId() {
+      let id = localStorage.getItem(DEVICE_KEY);
+      if (!id) {
+        const suffix = (window.crypto && window.crypto.randomUUID)
+          ? window.crypto.randomUUID().split("-")[0].toUpperCase()
+          : Math.random().toString(36).slice(2, 10).toUpperCase();
+        id = `DEV-${suffix}`;
+        localStorage.setItem(DEVICE_KEY, id);
+      }
+      return id;
+    }
+
+    const DEVICE_ID = resolveDeviceId();
+
+    async function bindSingleDeviceProfile(user) {
+      if (!user) throw new Error("Missing authenticated user session.");
+
+      const fallbackRole = (user.email || "").toLowerCase() === ADMIN_EMAIL.toLowerCase() ? "admin" : "student";
+      const fallbackProfile = {
+        id: user.id,
+        email: user.email ?? null,
+        full_name: user.user_metadata?.full_name || user.email || "Student",
+        role: fallbackRole,
+        active_device_id: DEVICE_ID
+      };
+
+      let currentProfile = null;
+      const { data: selectedData, error: selectErr } = await sb
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (selectErr) {
+        console.warn("profiles select warning:", selectErr.message);
+      } else {
+        currentProfile = selectedData;
+      }
+
+      const resolvedRole = currentProfile?.role || fallbackRole;
+      const fullPayload = {
+        id: user.id,
+        email: user.email ?? currentProfile?.email ?? null,
+        full_name: currentProfile?.full_name || user.user_metadata?.full_name || user.email || "Student",
+        role: resolvedRole,
+        active_device_id: DEVICE_ID,
+        email_verified_at: currentProfile?.email_verified_at || new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const { data: savedProfile, error: upsertErr } = await sb
+        .from("profiles")
+        .upsert(fullPayload)
+        .select()
+        .maybeSingle();
+
+      if (!upsertErr && savedProfile) return savedProfile;
+
+      const minimalPayload = {
+        id: user.id,
+        email: user.email ?? null,
+        role: resolvedRole,
+        active_device_id: DEVICE_ID
+      };
+
+      const { data: minSaved, error: minErr } = await sb
+        .from("profiles")
+        .upsert(minimalPayload)
+        .select()
+        .maybeSingle();
+
+      if (minErr) {
+        console.warn("Could not save to profiles table:", minErr.message);
+        showToast("Signed in (bound on this device)");
+        return { ...(currentProfile || {}), ...fallbackProfile, role: resolvedRole };
+      }
+
+      return minSaved || { ...fallbackProfile, role: resolvedRole };
+    }
+
+    let deviceOtpState = { code: "", email: "", password: "", expiresAt: 0 };
+
+    function generateEightDigitDeviceOtp() {
+      if (window.crypto && window.crypto.getRandomValues) {
+        const arr = new Uint32Array(1);
+        window.crypto.getRandomValues(arr);
+        return String(arr[0] % 100000000).padStart(8, "0");
+      }
+      return String(Math.floor(Math.random() * 100000000)).padStart(8, "0");
+    }
+
+    function setAuthTab(tabName) {
+      const isSignIn = tabName === "signin";
+      document.getElementById("tabSignIn").classList.toggle("active", isSignIn);
+      document.getElementById("tabSignUp").classList.toggle("active", !isSignIn);
+      document.getElementById("signInPanel").style.display = isSignIn ? "block" : "none";
+      document.getElementById("signUpPanel").style.display = isSignIn ? "none" : "block";
+      document.getElementById("forgotPanel").style.display = "none";
+      resetPasswordVisibility();
+      resetForgotFlow();
+      document.querySelector(".auth-mode-tabs").style.display = "grid";
+      resetRegistrationSteps();
+      setAlert("authAlertBox", "");
+    }
+
+    /* ---------- FORGOT PASSWORD (device OTP -> new password -> confirm) ---------- */
+    let resetState = { code: "", email: "", expiresAt: 0, verified: false };
+
+    function resetForgotFlow() {
+      resetState = { code: "", email: "", expiresAt: 0, verified: false };
+      cancelOtpAutoFill();
+      resetOtpButtons();
+      resetPasswordVisibility();
+      const emailForm = document.getElementById("forgotEmailForm");
+      const otpForm = document.getElementById("forgotOtpForm");
+      const pwForm = document.getElementById("forgotNewPasswordForm");
+      if (!emailForm) return;
+      emailForm.style.display = "block";
+      document.getElementById("forgotEmail").readOnly = false;
+      document.getElementById("forgotSendOtpBtn").style.display = "";
+      otpForm.style.display = "none";
+      pwForm.style.display = "none";
+      document.getElementById("forgotOtpInput").value = "";
+      document.getElementById("forgotNewPassword").value = "";
+      document.getElementById("forgotConfirmPassword").value = "";
+    }
+
+    function openForgotPanel(event) {
+      event.preventDefault();
+      const typed = document.getElementById("signInEmail").value.trim().toLowerCase();
+      resetForgotFlow();
+      document.querySelector(".auth-mode-tabs").style.display = "none";
+      document.getElementById("signInPanel").style.display = "none";
+      document.getElementById("signUpPanel").style.display = "none";
+      document.getElementById("forgotPanel").style.display = "block";
+      document.getElementById("forgotEmail").value = isValidEmailAddress(typed) ? typed : "";
+      setAlert("authAlertBox", "");
+    }
+
+    function handleForgotSendOtp(event) {
+      event.preventDefault();
+      const email = document.getElementById("forgotEmail").value.trim().toLowerCase();
+
+      if (!isValidEmailAddress(email)) {
+        setAlert("authAlertBox", "Please enter a valid email address.", "error");
+        return;
+      }
+
+      const code = generateEightDigitDeviceOtp();
+      resetState = { code, email, expiresAt: Date.now() + 10 * 60 * 1000, verified: false };
+
+      document.getElementById("forgotOtpForm").style.display = "block";
+      document.getElementById("forgotNewPasswordForm").style.display = "none";
+      scheduleOtpAutoFill({
+        code,
+        input: document.getElementById("forgotOtpInput"),
+        verifyBtn: document.getElementById("forgotVerifyOtpBtn"),
+        sendBtn: document.getElementById("forgotSendOtpBtn"),
+        isCurrent: () => resetState.code === code
+      });
+    }
+
+    function handleForgotVerifyOtp(event) {
+      event.preventDefault();
+      const entered = document.getElementById("forgotOtpInput").value.replace(/\s+/g, "");
+
+      if (!resetState.code || Date.now() > resetState.expiresAt) {
+        setAlert("authAlertBox", "Device OTP expired or missing. Tap Send OTP again.", "error");
+        return;
+      }
+      if (!/^\d{8}$/.test(entered) || entered !== resetState.code) {
+        setAlert("authAlertBox", "Incorrect 8-digit device OTP. Please check the code shown above.", "error");
+        return;
+      }
+
+      resetState.verified = true;
+      document.getElementById("forgotEmail").readOnly = true;
+      document.getElementById("forgotSendOtpBtn").style.display = "none";
+      document.getElementById("forgotOtpForm").style.display = "none";
+      document.getElementById("forgotNewPasswordForm").style.display = "block";
+      document.getElementById("forgotNewPassword").focus();
+      setAlert("authAlertBox", "OTP verified. Choose your new password.", "success");
+    }
+
+    async function handleForgotSetPassword(event) {
+      event.preventDefault();
+
+      if (!resetState.verified || !resetState.email) {
+        setAlert("authAlertBox", "Please verify the device OTP first.", "error");
+        return;
+      }
+
+      const pw = document.getElementById("forgotNewPassword").value;
+      const confirmPw = document.getElementById("forgotConfirmPassword").value;
+
+      if (pw.length < 6) {
+        setAlert("authAlertBox", "Password must be at least 6 characters.", "error");
+        return;
+      }
+      if (pw !== confirmPw) {
+        setAlert("authAlertBox", "Passwords do not match.", "error");
+        return;
+      }
+
+      const btn = document.getElementById("forgotSetPasswordBtn");
+      btn.disabled = true;
+      setAlert("authAlertBox", "");
+
+      try {
+        const email = resetState.email;
+        const { error } = await sb.rpc("reset_password_on_device", {
+          p_email: email,
+          p_device_id: DEVICE_ID,
+          p_new_password: pw
+        });
+        if (error) throw new Error(error.message || "Could not reset password.");
+
+        const { data: signInData, error: signInErr } = await sb.auth.signInWithPassword({ email, password: pw });
+        if (signInErr) {
+          resetForgotFlow();
+          setAuthTab("signin");
+          document.getElementById("signInEmail").value = email;
+          setAlert("authAlertBox", "Password updated. Please sign in with your new password.", "success");
+          return;
+        }
+
+        const profile = await bindSingleDeviceProfile(signInData.user);
+        resetForgotFlow();
+        setAuthTab("signin");
+        await openMainWorkspace(profile);
+        showToast("Password updated");
+      } catch (err) {
+        setAlert("authAlertBox", err.message || "Could not reset password.", "error");
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function resetRegistrationSteps() {
+      deviceOtpState = { code: "", email: "", password: "", expiresAt: 0 };
+      cancelOtpAutoFill();
+      resetOtpButtons();
+      document.getElementById("signUpVerifyDeviceOtpForm").style.display = "none";
+      document.getElementById("signUpOtpInput").value = "";
+    }
+
+    async function handlePasswordSignIn(event) {
+      event.preventDefault();
+      const rawIdentifier = document.getElementById("signInEmail").value.trim();
+      const lowerIdentifier = rawIdentifier.toLowerCase();
+      const password = document.getElementById("signInPassword").value;
+      const btn = document.getElementById("signInSubmitBtn");
+      const loginEmail = (lowerIdentifier === "admin" ? ADMIN_EMAIL : lowerIdentifier).toLowerCase();
+
+      if (!isValidEmailAddress(loginEmail)) {
+        setAlert("authAlertBox", "Please enter a valid email address.", "error");
+        return;
+      }
+
+      btn.disabled = true;
+      setAlert("authAlertBox", "");
+
+      try {
+        const { data, error } = await sb.auth.signInWithPassword({ email: loginEmail, password });
+        if (error) {
+          const msg = (error.message || "").toLowerCase();
+          if (msg.includes("invalid login credentials")) {
+            throw new Error("Wrong email or password. Please try again, or tap Forgot password.");
+          }
+          throw error;
+        }
+        const profile = await bindSingleDeviceProfile(data.user);
+        await openMainWorkspace(profile);
+      } catch (err) {
+        setAlert("authAlertBox", err.message || "Invalid email or password.", "error");
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function handleSendDeviceOnlyOtp(event) {
+      event.preventDefault();
+      const email = document.getElementById("signUpEmail").value.trim().toLowerCase();
+      const password = document.getElementById("signUpPassword").value;
+
+      if (!isValidEmailAddress(email)) {
+        setAlert("authAlertBox", "Please enter a valid email address.", "error");
+        return;
+      }
+      if (!password || password.length < 6) {
+        setAlert("authAlertBox", "Password must be at least 6 characters.", "error");
+        return;
+      }
+
+      const code = generateEightDigitDeviceOtp();
+      deviceOtpState = { code, email, password, expiresAt: Date.now() + 10 * 60 * 1000 };
+
+      document.getElementById("signUpVerifyDeviceOtpForm").style.display = "block";
+      scheduleOtpAutoFill({
+        code,
+        input: document.getElementById("signUpOtpInput"),
+        verifyBtn: document.getElementById("verifyOtpBtn"),
+        sendBtn: document.getElementById("sendOtpBtn"),
+        isCurrent: () => deviceOtpState.code === code
+      });
+    }
+
+    async function handleVerifyDeviceOtpAndLogin(event) {
+      event.preventDefault();
+      const enteredCode = document.getElementById("signUpOtpInput").value.replace(/\s+/g, "");
+
+      if (!deviceOtpState.code || Date.now() > deviceOtpState.expiresAt) {
+        setAlert("authAlertBox", "Device OTP expired or missing. Click Send OTP again.", "error");
+        return;
+      }
+      if (!/^\d{8}$/.test(enteredCode) || enteredCode !== deviceOtpState.code) {
+        setAlert("authAlertBox", "Incorrect 8-digit device OTP. Please check the code shown above.", "error");
+        return;
+      }
+
+      const btn = document.getElementById("verifyOtpBtn");
+      btn.disabled = true;
+      setAlert("authAlertBox", "");
+
+      try {
+        const email = deviceOtpState.email;
+        const password = deviceOtpState.password;
+        let activeUser = null;
+
+        const { data, error } = await sb.auth.signUp({ email, password });
+
+        if (error) {
+          const msg = (error.message || "").toLowerCase();
+          const alreadyExists =
+            msg.includes("already registered") ||
+            msg.includes("already exists") ||
+            msg.includes("user already");
+
+          if (!alreadyExists) throw error;
+
+          const { data: existingSignIn, error: existingErr } = await sb.auth.signInWithPassword({ email, password });
+          if (existingErr) {
+            throw new Error("This email is already registered. Enter its existing password or switch to the Sign In tab.");
+          }
+          activeUser = existingSignIn.user;
+        } else {
+          const looksLikeExisting =
+            Array.isArray(data?.user?.identities) && data.user.identities.length === 0;
+
+          if (looksLikeExisting && !data?.session) {
+            const { data: existingSignIn, error: existingErr } = await sb.auth.signInWithPassword({ email, password });
+            if (existingErr) {
+              throw new Error("This email is already registered. Use its existing password on the Sign In tab.");
+            }
+            activeUser = existingSignIn.user;
+          } else {
+            activeUser = data?.user ?? null;
+            if (!data?.session) {
+              const { data: signInData, error: signInErr } = await sb.auth.signInWithPassword({ email, password });
+              if (signInErr) throw signInErr;
+              activeUser = signInData.user;
+            }
+          }
+        }
+
+        const profile = await bindSingleDeviceProfile(activeUser);
+        resetRegistrationSteps();
+        await openMainWorkspace(profile);
+        showToast("Logged in");
+      } catch (err) {
+        setAlert("authAlertBox", err.message || "Could not complete sign up and login.", "error");
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function handleSignOut() {
+      try {
+        if (appState.realtimeSub) {
+          await sb.removeChannel(appState.realtimeSub);
+          appState.realtimeSub = null;
+        }
+        await sb.auth.signOut();
+      } catch (err) {
+        console.error("Sign out error:", err);
+      }
+      appState.profile = null;
+      appState.files = [];
+      appState.selectedSubject = null;
+      resetRegistrationSteps();
+      toggleUploadCard(false);
+      document.getElementById("mainScreen").classList.remove("active");
+      document.body.classList.remove("main-active");
+      document.getElementById("authScreen").classList.add("active");
+      showToast("Signed out");
+    }
+
+    async function openMainWorkspace(profile) {
+      appState.profile = profile;
+      const isAdmin = profile.role === "admin";
+
+      document.getElementById("authScreen").classList.remove("active");
+      const mainEl = document.getElementById("mainScreen");
+      document.body.classList.add("main-active");
+      mainEl.classList.add("active");
+      mainEl.classList.remove("motion-90hz");
+      void mainEl.offsetWidth;
+      mainEl.classList.add("motion-90hz");
+
+      document.getElementById("adminRoleBadge").classList.toggle("visible", isAdmin);
+      document.getElementById("topbarUploadBtn").classList.toggle("visible", isAdmin);
+      document.getElementById("drawerUploadBtn").style.display = isAdmin ? "flex" : "none";
+      if (!isAdmin) toggleUploadCard(false);
+
+      refreshAccountTexts();
+
+      appState.showAllFiles = false;
+      setActiveGrade(appState.grade);
+      refreshUploadSubjectOptions();
+      await loadCurriculumFiles();
+      subscribeCurriculumRealtime();
+    }
+
+    function setActiveGrade(gradeNum) {
+      appState.grade = Number(gradeNum);
+      appState.selectedSubject = null;
+      appState.selectedSubfolder = null;
+      appState.streamSelected = false;
+
+      document.querySelectorAll(".grade-tab-btn").forEach((btn) => {
+        btn.classList.toggle("active", Number(btn.dataset.grade) === appState.grade);
+      });
+
+      syncSubfolderPageVisibility();
+      renderSubjectGrid();
+      renderCurriculumFiles();
+    }
+
+    function setActiveStream(streamName) {
+      appState.stream = streamName;
+      appState.streamSelected = true;
+      appState.selectedSubject = null;
+      appState.selectedSubfolder = null;
+
+      document.getElementById("streamNaturalBtn").classList.toggle("active", streamName === "Natural Science");
+      document.getElementById("streamSocialBtn").classList.toggle("active", streamName === "Social Science");
+
+      syncSubfolderPageVisibility();
+      renderSubjectGrid();
+      renderCurriculumFiles();
+      scrollContentToTop();
+    }
+
+    function clearSelectedStream() {
+      appState.streamSelected = false;
+      appState.selectedSubject = null;
+      appState.selectedSubfolder = null;
+
+      syncSubfolderPageVisibility();
+      renderSubjectGrid();
+      renderCurriculumFiles();
+      scrollContentToTop();
+    }
+
+    function getSubjectsList(gradeNum, streamName) {
+      const group = CURRICULUM_SUBJECTS[Number(gradeNum)];
+      if (Array.isArray(group)) return group;
+      return group?.[streamName] || [];
+    }
+
+    function getEffectiveStream(gradeNum) {
+      return (Number(gradeNum) === 11 || Number(gradeNum) === 12) ? appState.stream : "General";
+    }
+
+    function renderSubjectGrid() {
+      const subjects = getSubjectsList(appState.grade, appState.stream);
+      const effectiveStream = getEffectiveStream(appState.grade);
+
+      document.getElementById("subjectsHeading").textContent = (appState.grade === 11 || appState.grade === 12)
+        ? `${tGrade(appState.grade)} • ${t(effectiveStream)}`
+        : `${tGrade(appState.grade)} ${t("Subjects")}`;
+      document.getElementById("subjectsPill").textContent = `${subjects.length} ${t("Subjects")}`;
+
+      const grid = document.getElementById("subjectsGrid");
+      grid.innerHTML = subjects.map((subj) => {
+        const selected = appState.selectedSubject === subj.name;
+        const count = appState.files.filter((item) =>
+          Number(item.grade) === appState.grade &&
+          item.stream === effectiveStream &&
+          item.subject === subj.name
+        ).length;
+
+        return `
+          <div
+            class="subject-tile ${selected ? "selected" : ""}"
+            onclick="toggleSubjectSelection('${escapeText(subj.name)}')"
+          >
+            <div class="subject-tile-left">
+              <div class="subject-icon">
+                <span class="material-icons-round" style="color:var(--icon-ink); font-size:20px;">${subj.icon}</span>
+              </div>
+              <div class="subject-title">${escapeText(t(subj.name))}</div>
+            </div>
+            <div class="subject-count">${count} ${count === 1 ? t("file") : t("files")}${selected ? ` • ${t("Open")}` : ""}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function syncSubfolderPageVisibility() {
+      const isStreamGrade = appState.grade === 11 || appState.grade === 12;
+      const allFiles = Boolean(appState.showAllFiles);
+      const hasSubject = !allFiles && Boolean(appState.selectedSubject);
+      const inStreamMenu = !allFiles && isStreamGrade && !appState.streamSelected && !hasSubject;
+      const inStreamSubjects = !allFiles && isStreamGrade && appState.streamSelected && !hasSubject;
+      const inSubjects = !allFiles && !hasSubject && !inStreamMenu;
+
+      const subjectsArea = document.getElementById("subjectsArea");
+      const subfolderPage = document.getElementById("subfolderPage");
+      const filesArea = document.getElementById("filesArea");
+      const gradeBar = document.querySelector(".grade-tab-bar");
+      const streamBar = document.getElementById("streamTabBar");
+      const streamPageHeader = document.getElementById("streamPageHeader");
+
+      if (gradeBar) gradeBar.style.display = hasSubject ? "none" : "grid";
+      if (streamBar) streamBar.classList.toggle("visible", inStreamMenu);
+      if (streamPageHeader) streamPageHeader.classList.toggle("visible", inStreamSubjects);
+
+      if (streamPageHeader && inStreamSubjects) {
+        const titleEl = document.getElementById("streamPageTitle");
+        const subEl = document.getElementById("streamPageSubtitle");
+        if (titleEl) titleEl.textContent = t(appState.stream);
+        if (subEl) subEl.textContent = `${tGrade(appState.grade)} • ${t("Subjects")}`;
+      }
+
+      if (subjectsArea) subjectsArea.style.display = inSubjects ? "block" : "none";
+      if (subfolderPage) subfolderPage.style.display = hasSubject ? "block" : "none";
+
+      // Files only appear inside a sub-folder, or in the Files tab.
+      if (filesArea) filesArea.style.display = (allFiles || hasSubject) ? "block" : "none";
+
+      const tabSubjects = document.getElementById("tabbarSubjects");
+      const tabFiles = document.getElementById("tabbarFiles");
+      if (tabSubjects) tabSubjects.classList.toggle("active", !allFiles);
+      if (tabFiles) tabFiles.classList.toggle("active", allFiles);
+
+      if (hasSubject) {
+        const titleEl = document.getElementById("subfolderPageTitle");
+        const subEl = document.getElementById("subfolderPageSubtitle");
+        const effectiveStream = getEffectiveStream(appState.grade);
+        if (titleEl) titleEl.textContent = t(appState.selectedSubfolder || appState.selectedSubject);
+        if (subEl) {
+          const place = isStreamGrade
+            ? `${tGrade(appState.grade)} • ${t(effectiveStream)}`
+            : tGrade(appState.grade);
+          subEl.textContent = appState.selectedSubfolder
+            ? `${t(appState.selectedSubject)} • ${place}`
+            : `${place} • ${t("Sub-Folders")}`;
+        }
+      }
+    }
+
+    function toggleSubjectSelection(subjectName) {
+      if (appState.selectedSubject === subjectName) {
+        appState.selectedSubject = null;
+        appState.selectedSubfolder = null;
+      } else {
+        appState.selectedSubject = subjectName;
+        appState.selectedSubfolder = null;
+      }
+      syncSubfolderPageVisibility();
+      renderSubjectGrid();
+      renderSubfolderBar();
+      renderCurriculumFiles();
+      scrollContentToTop();
+    }
+
+    function clearSelectedSubject() {
+      appState.selectedSubject = null;
+      appState.selectedSubfolder = null;
+      syncSubfolderPageVisibility();
+      renderSubjectGrid();
+      renderSubfolderBar();
+      renderCurriculumFiles();
+      scrollContentToTop();
+    }
+
+    function scrollContentToTop() {
+      const area = document.getElementById("scrollArea");
+      if (area) area.scrollTop = 0;
+    }
+
+    // Tap a sub-folder: open its PDF directly (newest file if there are several).
+    function setActiveSubfolder(folderName) {
+      const effectiveStream = getEffectiveStream(appState.grade);
+      const inFolder = appState.files.filter((item) =>
+        Number(item.grade) === appState.grade &&
+        item.stream === effectiveStream &&
+        item.subject === appState.selectedSubject &&
+        normalizeSubfolder(item.subfolder) === folderName
+      );
+
+      if (inFolder.length > 0 && inFolder[0].file_url) {
+        window.open(inFolder[0].file_url, "_blank", "noopener,noreferrer");
+        return;
+      }
+
+      // Empty folder: show the "no files yet" page.
+      showFolderFiles(folderName);
+    }
+
+    // Admin "manage" button: show the file list (with delete buttons).
+    function openFolderList(folderName) {
+      showFolderFiles(folderName);
+    }
+
+    function showFolderFiles(folderName) {
+      appState.selectedSubfolder = folderName;
+      syncSubfolderPageVisibility();
+      renderSubfolderBar();
+      renderCurriculumFiles();
+      scrollContentToTop();
+    }
+
+    // Back arrow: files -> sub-folder list -> subjects.
+    function handleSubfolderBack() {
+      if (appState.selectedSubfolder) {
+        appState.selectedSubfolder = null;
+        syncSubfolderPageVisibility();
+        renderSubfolderBar();
+        renderCurriculumFiles();
+        scrollContentToTop();
+      } else {
+        clearSelectedSubject();
+      }
+    }
+
+    function renderSubfolderBar() {
+      const bar = document.getElementById("subfolderBar");
+      syncSubfolderPageVisibility();
+      if (!appState.selectedSubject) {
+        bar.classList.remove("visible");
+        bar.innerHTML = "";
+        return;
+      }
+
+      if (appState.selectedSubfolder) {
+        bar.classList.remove("visible");
+        bar.innerHTML = "";
+        return;
+      }
+
+      const effectiveStream = getEffectiveStream(appState.grade);
+      const isAdmin = appState.profile?.role === "admin";
+      bar.classList.add("visible");
+
+      const folderCardsHtml = SUBJECT_SUBFOLDERS.map((folder) => {
+        const active = appState.selectedSubfolder === folder;
+        const count = appState.files.filter((item) =>
+          Number(item.grade) === appState.grade &&
+          item.stream === effectiveStream &&
+          item.subject === appState.selectedSubject &&
+          normalizeSubfolder(item.subfolder) === folder
+        ).length;
+
+        const iconName = folder === "Book"
+          ? "menu_book"
+          : folder === "Short Note"
+            ? "sticky_note_2"
+            : folder === "Weekly Exam"
+              ? "quiz"
+              : "school";
+
+        return `
+          <button
+            type="button"
+            class="subfolder-chip ${active ? "active" : ""}"
+            onclick="setActiveSubfolder('${escapeText(folder)}')"
+          >
+            <span class="subfolder-chip-left">
+              <span class="material-icons-round" style="font-size:18px; color:var(--icon-ink);">${iconName}</span>
+              <span>${escapeText(t(folder))}</span>
+            </span>
+            <span style="display:inline-flex; align-items:center; gap:10px;">
+              <span style="font-size:11.5px; color:var(--text-secondary);">${count}</span>
+              ${isAdmin ? `<span role="button" aria-label="Manage files" title="Manage files" onclick="event.stopPropagation(); openFolderList('${escapeText(folder)}')" style="width:30px; height:30px; border-radius:9px; border:1px solid var(--crimson-border); background:var(--coral-soft); display:grid; place-items:center;"><span class="material-icons-round" style="font-size:17px; color:var(--coral);">list</span></span>` : ""}
+            </span>
+          </button>
+        `;
+      }).join("");
+
+      bar.innerHTML = folderCardsHtml;
+    }
+
+    async function loadCurriculumFiles() {
+      try {
+        const { data, error } = await sb
+          .from("curriculum_files")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (error) throw error;
+        appState.files = Array.isArray(data) ? data : [];
+      } catch (err) {
+        console.error("Failed to fetch curriculum_files:", err);
+      }
+      renderSubjectGrid();
+      renderCurriculumFiles();
+    }
+
+    function subscribeCurriculumRealtime() {
+      if (appState.realtimeSub) {
+        sb.removeChannel(appState.realtimeSub);
+      }
+      appState.realtimeSub = sb
+        .channel("curriculum-files-stream")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "curriculum_files" },
+          () => loadCurriculumFiles()
+        )
+        .subscribe();
+    }
+
+    function renderCurriculumFiles() {
+      renderSubfolderBar();
+      const effectiveStream = getEffectiveStream(appState.grade);
+      const isAdmin = appState.profile?.role === "admin";
+
+      const filteredFiles = appState.files.filter((file) => {
+        const matchGrade = Number(file.grade) === appState.grade;
+        const matchStream = appState.showAllFiles || file.stream === effectiveStream;
+        const matchSubject = !appState.selectedSubject || file.subject === appState.selectedSubject;
+        const folderVal = normalizeSubfolder(file.subfolder);
+        const matchFolder = !appState.selectedSubject || !appState.selectedSubfolder || folderVal === appState.selectedSubfolder;
+        return matchGrade && matchStream && matchSubject && matchFolder;
+      });
+
+      document.getElementById("filesHeading").textContent = appState.showAllFiles
+        ? `${tGrade(appState.grade)} • ${t("Files")}`
+        : appState.selectedSubject
+        ? (appState.selectedSubfolder
+          ? `${t(appState.selectedSubject)} • ${t(appState.selectedSubfolder)}`
+          : `${t(appState.selectedSubject)} ${t("Folders")}`)
+        : t("Curriculum Materials");
+      document.getElementById("filesPill").textContent = `${filteredFiles.length} ${filteredFiles.length === 1 ? t("File") : t("Files")}`;
+
+      // Folder list view: show only the sub-folders, no files.
+      const inFolderList = Boolean(appState.selectedSubject) && !appState.selectedSubfolder;
+      const filesHeader = document.getElementById("filesHeading").parentElement;
+      if (filesHeader) filesHeader.style.display = inFolderList ? "none" : "flex";
+
+      const stack = document.getElementById("filesStack");
+      if (inFolderList) {
+        stack.innerHTML = "";
+        return;
+      }
+      if (filteredFiles.length === 0) {
+        let place = tGrade(appState.grade);
+        if (!appState.showAllFiles && (appState.grade === 11 || appState.grade === 12)) place += ` (${t(effectiveStream)})`;
+        if (appState.selectedSubject) place += ` • ${t(appState.selectedSubject)}`;
+        if (appState.selectedSubject && appState.selectedSubfolder) place += ` • ${t(appState.selectedSubfolder)}`;
+
+        stack.innerHTML = `
+          <div class="empty-state">
+            ${escapeText(tNoFiles(place))}<br/>
+            ${escapeText(t("Need help? Reach out at"))} <a class="help-link" href="https://t.me/lioahmedjr" target="_blank" rel="noopener noreferrer">t.me/lioahmedjr</a>
+          </div>
+        `;
+        return;
+      }
+
+      stack.innerHTML = filteredFiles.map((file) => {
+        const safeUrl = escapeText(file.file_url || "#");
+        const folderLabel = escapeText(normalizeSubfolder(file.subfolder));
+        const deleteBtnHtml = isAdmin
+          ? `<button type="button" class="delete-file-btn" title="Delete file" aria-label="Delete file" onclick="handleDeleteCurriculumFile('${escapeText(file.id)}', '${escapeText(file.storage_path || "")}', '${escapeText(file.file_name || "file")}')">
+               <span class="material-icons-round" style="font-size:17px;">delete</span>
+             </button>`
+          : "";
+
+        return `
+          <div class="file-row">
+            <div class="file-meta-wrap">
+              <div class="file-badge-icon">
+                <span class="material-icons-round" style="font-size:21px;">description</span>
+              </div>
+              <div class="file-text">
+                <div class="file-title">${escapeText(file.file_name)}</div>
+                <div class="file-sub">${escapeText(t(file.subject))} • ${escapeText(t(normalizeSubfolder(file.subfolder)))} • ${escapeText(tGrade(file.grade))}${file.stream && file.stream !== "General" ? ` (${escapeText(t(file.stream))})` : ""}</div>
+              </div>
+            </div>
+            <div class="file-actions-row">
+              <a class="open-file-btn" href="${safeUrl}" target="_blank" rel="noopener noreferrer">
+                <span class="material-icons-round" style="font-size:15px;">open_in_new</span>
+                <span>${escapeText(t("Open"))}</span>
+              </a>
+              ${deleteBtnHtml}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function handleDeleteCurriculumFile(fileId, storagePath, fileName) {
+      if (appState.profile?.role !== "admin") {
+        showToast("Admin access required");
+        return;
+      }
+      if (!confirm(`Delete "${fileName}"?`)) return;
+
+      try {
+        if (storagePath) {
+          const { error: storageErr } = await sb.storage
+            .from(CURRICULUM_BUCKET)
+            .remove([storagePath]);
+          if (storageErr) console.warn("Storage delete warning:", storageErr.message);
+        }
+
+        let query = sb.from("curriculum_files").delete();
+        if (fileId) {
+          query = query.eq("id", fileId);
+        } else if (storagePath) {
+          query = query.eq("storage_path", storagePath);
+        }
+
+        const { error: dbErr } = await query;
+        if (dbErr) throw dbErr;
+
+        appState.files = appState.files.filter((f) =>
+          fileId ? String(f.id) !== String(fileId) : f.storage_path !== storagePath
+        );
+        renderSubjectGrid();
+        renderCurriculumFiles();
+        showToast("File deleted");
+      } catch (err) {
+        showToast(err.message || "Could not delete file");
+      }
+    }
+
+    function toggleUploadCard(show) {
+      if (show && appState.profile?.role !== "admin") {
+        showToast("Admin access required");
+        return;
+      }
+      const card = document.getElementById("adminUploadCard");
+      card.classList.toggle("open", Boolean(show));
+      if (show) {
+        document.getElementById("uploadGrade").value = String(appState.grade);
+        if (appState.grade === 11 || appState.grade === 12) {
+          document.getElementById("uploadStream").value = appState.stream;
+        }
+        refreshUploadSubjectOptions();
+        card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    }
+
+    function refreshUploadSubjectOptions() {
+      const g = Number(document.getElementById("uploadGrade").value);
+      const hasStreams = g === 11 || g === 12;
+      document.getElementById("uploadStreamField").style.display = hasStreams ? "block" : "none";
+      const s = hasStreams ? document.getElementById("uploadStream").value : "General";
+
+      const subjects = getSubjectsList(g, s);
+      document.getElementById("uploadSubject").innerHTML = subjects
+        .map((subj) => `<option value="${escapeText(subj.name)}">${escapeText(t(subj.name))}</option>`)
+        .join("");
+    }
+
+    async function handleCurriculumUpload(event) {
+      event.preventDefault();
+      if (appState.profile?.role !== "admin") {
+        setAlert("uploadAlertBox", "Only admin accounts can upload curriculum files.", "error");
+        return;
+      }
+
+      const fileInput = document.getElementById("uploadFile");
+      const file = fileInput.files?.[0];
+      if (!file) {
+        setAlert("uploadAlertBox", "Select a file before uploading.", "error");
+        return;
+      }
+
+      const grade = Number(document.getElementById("uploadGrade").value);
+      const stream = (grade === 11 || grade === 12)
+        ? document.getElementById("uploadStream").value
+        : "General";
+      const subject = document.getElementById("uploadSubject").value;
+      const subfolder = document.getElementById("uploadSubfolder")?.value || "Short Note";
+
+      const cleanFileName = file.name.replace(/[^A-Za-z0-9._-]/g, "_");
+      const streamSlug = stream.toLowerCase().replace(/\s+/g, "_");
+      const subjectSlug = subject.toLowerCase().replace(/\s+/g, "_");
+      const folderSlug = subfolder.toLowerCase().replace(/\s+/g, "_");
+      const path = `grade_${grade}/${streamSlug}/${subjectSlug}/${folderSlug}/${Date.now()}_${cleanFileName}`;
+
+      const btn = document.getElementById("uploadSubmitBtn");
+      btn.disabled = true;
+      setAlert("uploadAlertBox", "");
+
+      try {
+        const { error: uploadErr } = await sb.storage
+          .from(CURRICULUM_BUCKET)
+          .upload(path, file, { upsert: false });
+        if (uploadErr) throw uploadErr;
+
+        const { data: publicUrlData } = sb.storage.from(CURRICULUM_BUCKET).getPublicUrl(path);
+        const { data: userData } = await sb.auth.getUser();
+
+        const fullRow = {
+          grade,
+          stream,
+          subject,
+          subfolder,
+          file_name: file.name,
+          storage_path: path,
+          file_url: publicUrlData.publicUrl,
+          uploaded_by: userData?.user?.id ?? null
+        };
+
+        let { error: insertErr } = await sb
+          .from("curriculum_files")
+          .insert(fullRow);
+
+        if (insertErr && (insertErr.message || "").toLowerCase().includes("subfolder")) {
+          const fallbackRow = {
+            grade,
+            stream,
+            subject,
+            file_name: file.name,
+            storage_path: path,
+            file_url: publicUrlData.publicUrl,
+            uploaded_by: userData?.user?.id ?? null
+          };
+          const retry = await sb.from("curriculum_files").insert(fallbackRow);
+          insertErr = retry.error;
+        }
+        if (insertErr) throw insertErr;
+
+        fileInput.value = "";
+        setAlert("uploadAlertBox", `Uploaded "${file.name}" to Grade ${grade} • ${subject} • ${subfolder}.`, "success");
+        showToast("Curriculum file published");
+        await loadCurriculumFiles();
+      } catch (err) {
+        setAlert("uploadAlertBox", err.message || "Upload failed.", "error");
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function toggleSideDrawer(open) {
+      const shouldOpen = Boolean(open);
+      document.getElementById("sideDrawer").classList.toggle("open", shouldOpen);
+      document.getElementById("sideBackdrop").classList.toggle("open", shouldOpen);
+    }
+
+    function scrollToWorkspaceSection(targetKey) {
+      appState.showAllFiles = false;
+      appState.selectedSubject = null;
+      appState.selectedSubfolder = null;
+
+      syncSubfolderPageVisibility();
+      renderSubjectGrid();
+      renderCurriculumFiles();
+      scrollContentToTop();
+    }
+
+    async function initEduApp() {
+      refreshUploadSubjectOptions();
+
+      try {
+        const { data } = await sb.auth.getSession();
+        const user = data?.session?.user;
+        if (user) {
+          const profile = await bindSingleDeviceProfile(user);
+          await openMainWorkspace(profile);
+        }
+      } catch (err) {
+        console.warn("Initial session check:", err.message);
+      }
+    }
+
+    (function disableZoomShortcuts() {
+      // Pinch and double-tap zoom are already blocked by the viewport meta and
+      // touch-action rules. Non-passive touch/wheel listeners are deliberately
+      // NOT used: they make the browser wait for JavaScript before every
+      // scroll frame, which is what makes scrolling feel laggy.
+      ["gesturestart", "gesturechange", "gestureend"].forEach((evtName) => {
+        document.addEventListener(evtName, (e) => e.preventDefault());
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && ["+", "-", "=", "0"].includes(e.key)) {
+          e.preventDefault();
+        }
+      });
+    })();
+
+    enhancePasswordFields();
+    renderLangMenu();
+    applyLanguage(currentLang);
+    initEduApp();
+  </script>
+</body>
+</html>
