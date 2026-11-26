@@ -472,7 +472,8 @@
     }
 
     .scroll-area {
-      flex: 1 1 auto;
+      flex: 1 1 0;
+      height: 0;
       min-height: 0;
       overflow-y: auto;
       overflow-x: hidden;
@@ -481,7 +482,8 @@
     }
 
     .topbar {
-      position: sticky;
+      position: relative;
+      flex: 0 0 auto;
       top: 0;
       left: 0;
       right: 0;
@@ -974,6 +976,7 @@
     .bottom-tabbar {
       position: relative;
       flex: 0 0 auto;
+      margin-top: auto;
       width: 100%;
       background: var(--tabbar-bg);
       border-top: 1px solid var(--border-subtle);
@@ -1301,7 +1304,52 @@
         transition-duration: 0.01ms !important;
       }
     }
+    /* EduApp reader and folder enhancements */
+    #filesPill, #subjectsPill, .subject-count { display:none !important; }
+    .folder-admin-tools { flex-wrap:wrap; }
+    .folder-admin-tools .btn-ghost { width:auto; flex:1; padding:10px 8px; }
+    .folder-path-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; font-size:12px; color:var(--text-secondary); }
+    .folder-path-row button { border:0; background:transparent; color:var(--coral); font-weight:700; }
+    .folder-card { width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px; border:1px solid var(--border-subtle); background:var(--folder-bg); color:var(--text-primary); border-radius:15px; padding:13px; margin-bottom:8px; text-align:left; }
+    .folder-card-main { display:flex; align-items:center; gap:10px; min-width:0; font-weight:700; }
+    .folder-card-actions { display:flex; align-items:center; gap:7px; }
+    .folder-delete { border:1px solid var(--crimson-border); color:var(--coral); background:var(--coral-soft); border-radius:9px; padding:7px; }
+    .file-row .file-title { white-space:normal; overflow-wrap:anywhere; }
+    .reader-overlay { display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,.88); align-items:stretch; justify-content:center; }
+    .reader-overlay.open { display:flex; }
+    .reader-shell { width:100%; max-width:960px; height:100%; background:var(--bg-surface); color:var(--text-primary); display:flex; flex-direction:column; }
+    .reader-toolbar { display:flex; align-items:center; gap:6px; padding:8px; border-bottom:1px solid var(--border-subtle); flex-wrap:wrap; background:var(--bg-surface); }
+    .reader-toolbar button { border:1px solid var(--border-subtle); background:var(--bg-card); color:var(--text-primary); border-radius:8px; padding:7px 9px; font-size:12px; }
+    .reader-title { flex:1; min-width:80px; font-size:12px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .reader-content { flex:1; min-height:0; overflow:auto; background:#272a30; padding:12px; }
+    .reader-content iframe { width:100%; height:100%; min-height:70vh; border:0; background:#fff; }
+    .pdf-page-wrap { position:relative; display:inline-block; margin:0 auto 16px; background:white; box-shadow:0 3px 18px #0005; }
+    .pdf-page-wrap canvas { display:block; }
+    .pdf-text-layer { position:absolute; inset:0; overflow:hidden; opacity:1; line-height:1; text-align:left; }
+    .pdf-text-layer span { position:absolute; white-space:pre; color:transparent; transform-origin:0 0; cursor:text; }
+    .pdf-text-layer ::selection { background:rgba(255,220,0,.45); }
+    .pdf-annotation-layer { position:absolute; inset:0; pointer-events:none; }
+    .pdf-mark { position:absolute; pointer-events:none; }
+    .pdf-selection-popup { display:none; position:fixed; z-index:2010; background:var(--bg-card); border:1px solid var(--border-strong); border-radius:12px; padding:8px; box-shadow:0 8px 28px #0007; gap:5px; flex-wrap:wrap; max-width:96vw; }
+    .pdf-selection-popup.open { display:flex; }
+    .pdf-selection-popup button { border:1px solid var(--border-subtle); background:var(--bg-surface); color:var(--text-primary); border-radius:8px; padding:8px; font-size:11px; }
+    .pdf-color-dot { display:inline-block; width:12px; height:12px; border-radius:50%; vertical-align:middle; }
+    .reader-status { font-size:11px; color:var(--text-secondary); padding:4px 8px; }
+    @media (min-width:600px) { .reader-shell { border-radius:16px; height:96vh; margin:auto; } }
+    /* Keep the full EduApp workspace in portrait layout on landscape phones. */
+    @media (orientation:landscape) and (max-height:600px) and (max-width:1000px) {
+      body { overflow:hidden !important; }
+      .app-shell { position:fixed !important; top:0 !important; left:100vw !important; width:100vh !important; height:100vw !important; max-width:none !important; min-height:0 !important; transform:rotate(90deg) !important; transform-origin:top left !important; }
+      body.main-active .app-shell { height:100vw !important; }
+      .reader-overlay { transform:none !important; }
+    }
   </style>
+<style>
+/* Keep EduApp navigation visible; scroll only the content pane */
+.topbar{position:sticky!important;top:0!important;z-index:100!important;flex-shrink:0!important}
+.bottom-tabbar{position:sticky!important;bottom:0!important;z-index:100!important;flex-shrink:0!important}
+#scrollArea,.scroll-area{overscroll-behavior:contain}
+</style>
 </head>
 <body>
   <div class="toast-banner" id="toastBanner" role="status" aria-live="polite"></div>
@@ -1667,7 +1715,7 @@
 
             <div class="field">
               <label class="field-label" for="uploadSubfolder">Sub-Folder</label>
-              <select class="select-control" id="uploadSubfolder">
+              <select class="select-control" id="uploadSubfolder" onchange="refreshUploadNestedFolderOptions()">
                 <option value="Book">Book</option>
                 <option value="Short Note" selected>Short Note</option>
                 <option value="Weekly Exam">Weekly Exam</option>
@@ -1675,9 +1723,14 @@
               </select>
             </div>
 
+            <div class="field" id="uploadNestedFolderField" style="display:none;">
+              <label class="field-label" for="uploadNestedFolder">Inside folder</label>
+              <select class="select-control" id="uploadNestedFolder"><option value="">Choose folder</option></select>
+            </div>
+
             <div class="field">
               <label class="field-label" for="uploadFile">Attach File</label>
-              <input class="input-control" id="uploadFile" type="file" required />
+              <input class="input-control" id="uploadFile" type="file" accept=".pdf,.html,.htm,.docx" required />
             </div>
 
             <button type="submit" class="btn-coral" id="uploadSubmitBtn">
@@ -1718,6 +1771,10 @@
           <div class="section-top">
             <h2 class="section-heading" id="filesHeading">Curriculum Materials</h2>
             <span class="section-pill" id="filesPill">0 Files</span>
+          </div>
+          <div class="folder-admin-tools" id="folderAdminTools" style="display:none; gap:8px; margin-bottom:10px;">
+            <button type="button" class="btn-ghost" onclick="adminCreateNestedFolder()"><span class="material-icons-round">create_new_folder</span> Create folder</button>
+          <button type="button" class="btn-ghost" onclick="setNestedFolderParent()"><span class="material-icons-round">folder_open</span> Parent folder</button>
           </div>
           <div class="subfolder-bar" id="subfolderBar" aria-label="Subject Sub-Folders"></div>
           <div class="files-stack" id="filesStack"></div>
@@ -1878,7 +1935,8 @@
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
     }
 
     const THEME_STORAGE_KEY = "eduapp_theme_mode";
@@ -2910,9 +2968,11 @@
       if (appState.selectedSubject === subjectName) {
         appState.selectedSubject = null;
         appState.selectedSubfolder = null;
+        appState.selectedNestedFolder = null;
       } else {
         appState.selectedSubject = subjectName;
         appState.selectedSubfolder = null;
+        appState.selectedNestedFolder = null;
       }
       syncSubfolderPageVisibility();
       renderSubjectGrid();
@@ -3077,7 +3137,9 @@
         const matchStream = appState.showAllFiles || file.stream === effectiveStream;
         const matchSubject = !appState.selectedSubject || file.subject === appState.selectedSubject;
         const folderVal = normalizeSubfolder(file.subfolder);
-        const matchFolder = !appState.selectedSubject || !appState.selectedSubfolder || folderVal === appState.selectedSubfolder;
+        const baseFolder = String(folderVal).split("/")[0];
+        const nestedCategory = appState.selectedSubfolder === "Weekly Exam" || appState.selectedSubfolder === "EUEE";
+        const matchFolder = !appState.selectedSubject || !appState.selectedSubfolder || (appState.selectedNestedFolder ? folderVal === appState.selectedSubfolder + "/" + appState.selectedNestedFolder : nestedCategory ? folderVal === appState.selectedSubfolder : baseFolder === appState.selectedSubfolder);
         return matchGrade && matchStream && matchSubject && matchFolder;
       });
 
@@ -3125,7 +3187,7 @@
           : "";
 
         return `
-          <div class="file-row">
+          <div class="file-row" data-file-id="${escapeText(file.id || file.storage_path || file.file_name)}">
             <div class="file-meta-wrap">
               <div class="file-badge-icon">
                 <span class="material-icons-round" style="font-size:21px;">description</span>
@@ -3225,13 +3287,18 @@
         setAlert("uploadAlertBox", "Select a file before uploading.", "error");
         return;
       }
+      const fileExt = (file.name.split(".").pop() || "").toLowerCase();
+      if (!["pdf", "html", "htm", "docx"].includes(fileExt)) {
+        setAlert("uploadAlertBox", "Supported file types are PDF, HTML, and DOCX.", "error");
+        return;
+      }
 
       const grade = Number(document.getElementById("uploadGrade").value);
       const stream = (grade === 11 || grade === 12)
         ? document.getElementById("uploadStream").value
         : "General";
       const subject = document.getElementById("uploadSubject").value;
-      const subfolder = document.getElementById("uploadSubfolder")?.value || "Short Note";
+      const subfolder = document.getElementById("uploadSubfolder")?.dataset.nestedPath || document.getElementById("uploadSubfolder")?.value || "Short Note";
 
       const cleanFileName = file.name.replace(/[^A-Za-z0-9._-]/g, "_");
       const streamSlug = stream.toLowerCase().replace(/\s+/g, "_");
@@ -3346,5 +3413,289 @@
     applyLanguage(currentLang);
     initEduApp();
   </script>
+
+  <div class="reader-overlay" id="eduReaderOverlay" aria-label="EduApp Reader">
+    <div class="reader-shell">
+      <div class="reader-toolbar">
+        <button type="button" onclick="closeEduReader()" aria-label="Close reader">← Back</button>
+        <div class="reader-title" id="eduReaderTitle">Reader</div>
+        <button type="button" onclick="pdfRotate(-90)" title="Rotate left">↶</button>
+        <button type="button" onclick="pdfRotate(90)" title="Rotate right">↷</button>
+        <button type="button" onclick="pdfToggleTheme()" title="Reader theme">◐</button>
+        <button type="button" onclick="pdfZoom(-.15)">−</button><button type="button" onclick="pdfZoom(.15)">+</button>
+        <button type="button" onclick="readerDownloadCurrent()" title="Download">↓</button>
+      </div>
+      <div class="reader-status" id="eduReaderStatus">Loading…</div>
+      <div class="reader-content" id="eduReaderContent"></div>
+    </div>
+  </div>
+  <div class="pdf-selection-popup" id="pdfSelectionPopup">
+    <button type="button" onclick="pdfApplyMark('underline')">Underline</button>
+    <button type="button" onclick="pdfApplyMark('strike')">Strike</button>
+    <button type="button" onclick="pdfApplyMark('highlight','red')"><span class="pdf-color-dot" style="background:#ef4444"></span></button>
+    <button type="button" onclick="pdfApplyMark('highlight','green')"><span class="pdf-color-dot" style="background:#22c55e"></span></button>
+    <button type="button" onclick="pdfApplyMark('highlight','yellow')"><span class="pdf-color-dot" style="background:#facc15"></span></button>
+    <button type="button" onclick="pdfApplyMark('highlight','purple')"><span class="pdf-color-dot" style="background:#a855f7"></span></button>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    let eduReaderUrl="", eduReaderName="", eduReaderMode="", eduPdfDoc=null, eduPdfScale=1, eduPdfRotation=0, eduPdfTheme="light", eduPdfSelection=null;
+    const eduPdfMarks={};
+    function eduMarkKey(){return "eduapp_pdf_marks_v2:"+eduReaderUrl;}
+    function openCurriculumFile(url,name){
+      const ext=(String(name||url).split(/[?#]/)[0].split('.').pop()||'').toLowerCase();
+      eduReaderUrl=url; eduReaderName=name||"Material"; eduReaderMode=ext;
+      if(ext==='docx'){downloadCurriculumFile(url,name);return;}
+      if(ext==='pdf'){openEduPdf(url,name);return;}
+      if(ext==='html'||ext==='htm'){openEduHtml(url,name);return;}
+      window.open(url,"_blank","noopener,noreferrer");
+    }
+    function openEduHtml(url,name){
+      eduReaderMode='html'; document.getElementById('eduReaderTitle').textContent=name||'HTML Reader';
+      document.getElementById('eduReaderStatus').textContent='HTML document';
+      const box=document.getElementById('eduReaderContent');box.innerHTML='';
+      const frame=document.createElement('iframe');frame.title=name||'HTML document';frame.setAttribute('sandbox','allow-scripts allow-forms allow-popups');frame.src=url;box.appendChild(frame);
+      document.getElementById('eduReaderOverlay').classList.add('open');
+    }
+    async function downloadCurriculumFile(url,name){
+      try{const response=await fetch(url);if(!response.ok)throw new Error('Download unavailable');const blob=await response.blob();const objectUrl=URL.createObjectURL(blob);const a=document.createElement('a');a.href=objectUrl;a.download=name||'material';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(objectUrl),1500);}
+      catch(e){const a=document.createElement('a');a.href=url;a.download=name||'material';a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove();showToast('If download did not start, use the browser download option.');}
+    }
+    function readerDownloadCurrent(){if(eduReaderUrl)downloadCurriculumFile(eduReaderUrl,eduReaderName);}
+    function closeEduReader(){document.getElementById('eduReaderOverlay').classList.remove('open');document.getElementById('pdfSelectionPopup').classList.remove('open');eduPdfDoc=null;}
+    function openEduPdf(url,name){
+      if(!window.pdfjsLib){window.open(url,'_blank','noopener');return;}
+      eduReaderMode='pdf';eduReaderUrl=url;eduReaderName=name||'PDF Reader';eduPdfScale=1;eduPdfRotation=0;eduPdfDoc=null;
+      document.getElementById('eduReaderTitle').textContent=eduReaderName;document.getElementById('eduReaderStatus').textContent='Loading PDF…';
+      document.getElementById('eduReaderContent').innerHTML='';document.getElementById('eduReaderOverlay').classList.add('open');
+      try{eduPdfMarks[eduReaderUrl]=JSON.parse(localStorage.getItem(eduMarkKey())||'[]')}catch{eduPdfMarks[eduReaderUrl]=[]}
+      pdfjsLib.getDocument({url,withCredentials:false}).promise.then(doc=>{eduPdfDoc=doc;renderEduPdfPages();}).catch(err=>{document.getElementById('eduReaderStatus').textContent='Could not load PDF. Storage must allow PDF access (CORS). Use Download if needed.';console.error(err);});
+    }
+    function pdfRotate(deg){eduPdfRotation=(eduPdfRotation+deg+360)%360;renderEduPdfPages();}
+    function pdfZoom(delta){eduPdfScale=Math.max(.5,Math.min(2.5,eduPdfScale+delta));renderEduPdfPages();}
+    function pdfToggleTheme(){eduPdfTheme=eduPdfTheme==='light'?'dark':'light';document.getElementById('eduReaderContent').style.background=eduPdfTheme==='dark'?'#17191e':'#272a30';}
+    async function renderEduPdfPages(){
+      if(!eduPdfDoc)return;const stage=document.getElementById('eduReaderContent');stage.innerHTML='';document.getElementById('eduReaderStatus').textContent=eduPdfDoc.numPages+' pages • Select text to annotate';
+      for(let n=1;n<=eduPdfDoc.numPages;n++){const page=await eduPdfDoc.getPage(n),vp=page.getViewport({scale:eduPdfScale,rotation:eduPdfRotation});const wrap=document.createElement('div');wrap.className='pdf-page-wrap';wrap.style.width=vp.width+'px';wrap.style.height=vp.height+'px';
+        const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');canvas.width=Math.floor(vp.width);canvas.height=Math.floor(vp.height);canvas.style.width=vp.width+'px';canvas.style.height=vp.height+'px';wrap.appendChild(canvas);
+        const textLayer=document.createElement('div');textLayer.className='pdf-text-layer';textLayer.style.width=vp.width+'px';textLayer.style.height=vp.height+'px';wrap.appendChild(textLayer);const ann=document.createElement('div');ann.className='pdf-annotation-layer';ann.dataset.page=n;wrap.appendChild(ann);stage.appendChild(wrap);
+        await page.render({canvasContext:ctx,viewport:vp}).promise;const tc=await page.getTextContent();tc.items.forEach(item=>{if(!item.str)return;const tx=pdfjsLib.Util.transform(vp.transform,item.transform),span=document.createElement('span');span.textContent=item.str;span.style.left=tx[4]+'px';span.style.top=(tx[5]-Math.abs(tx[3]))+'px';span.style.fontSize=Math.hypot(tx[2],tx[3])+'px';span.style.fontFamily=item.fontName;span.style.transform=`scaleX(${Math.hypot(tx[0],tx[1])/Math.max(1,Math.hypot(tx[2],tx[3]))})`;textLayer.appendChild(span);});drawEduPdfMarks(n,ann,vp);
+      }
+      stage.onmouseup=showEduPdfSelection;stage.ontouchend=()=>setTimeout(showEduPdfSelection,80);
+    }
+    function showEduPdfSelection(){const sel=getSelection();if(!sel||sel.isCollapsed||!sel.toString().trim())return;const range=sel.getRangeAt(0),wrap=range.commonAncestorContainer.parentElement?.closest('.pdf-page-wrap')||range.commonAncestorContainer.parentElement?.parentElement?.closest('.pdf-page-wrap');if(!wrap)return;const layer=wrap.querySelector('.pdf-annotation-layer'),rects=[...range.getClientRects()].filter(r=>r.width&&r.height).map(r=>{const b=wrap.getBoundingClientRect();return{x:(r.left-b.left)/b.width,y:(r.top-b.top)/b.height,w:r.width/b.width,h:r.height/b.height};});
+      eduPdfSelection={page:Number(layer.dataset.page),rects,text:sel.toString()};const popup=document.getElementById('pdfSelectionPopup'),r=range.getBoundingClientRect();popup.style.left=Math.min(innerWidth-300,Math.max(8,r.left))+'px';popup.style.top=Math.max(8,r.top-48)+'px';popup.classList.add('open');}
+    function pdfApplyMark(type,color){if(!eduPdfSelection)return;const arr=eduPdfMarks[eduReaderUrl]||(eduPdfMarks[eduReaderUrl]=[]);arr.push({...eduPdfSelection,type,color:color||'yellow'});localStorage.setItem(eduMarkKey(),JSON.stringify(arr));document.getElementById('pdfSelectionPopup').classList.remove('open');getSelection()?.removeAllRanges();renderEduPdfPages();showToast(type==='highlight'?'Highlight saved':type==='strike'?'Strikethrough saved':'Underline saved');}
+    function drawEduPdfMarks(pageNo,layer,vp){const arr=eduPdfMarks[eduReaderUrl]||[],colors={red:'rgba(239,68,68,.38)',green:'rgba(34,197,94,.38)',yellow:'rgba(250,204,21,.42)',purple:'rgba(168,85,247,.38)'};arr.filter(m=>m.page===pageNo).forEach(m=>m.rects.forEach(r=>{const el=document.createElement('div');el.className='pdf-mark';el.style.left=r.x*vp.width+'px';el.style.top=r.y*vp.height+'px';el.style.width=r.w*vp.width+'px';el.style.height=r.h*vp.height+'px';if(m.type==='highlight')el.style.background=colors[m.color]||colors.yellow;else if(m.type==='underline')el.style.borderBottom='2px solid #ef4444';else el.style.borderTop='2px solid #ef4444';layer.appendChild(el);}));}
+    // Nested folder management for Weekly Exam and EUEE. Folder names are stored as category/name in curriculum_files.subfolder.
+    appState.selectedNestedFolder=null;appState.folders=[];
+    async function loadEduFolders(){try{const {data,error}=await sb.from('curriculum_folders').select('*').order('name');if(error)throw error;appState.folders=Array.isArray(data)?data:[];}catch(e){appState.folders=[];console.warn('Folder table not ready:',e.message);}}
+    async function adminCreateNestedFolder(){if(appState.profile?.role!=='admin'){showToast('Admin access required');return;}const category=appState.selectedSubfolder;if(!['Weekly Exam','EUEE'].includes(category)){showToast('Open Weekly Exam or EUEE first');return;}const leaf=(prompt('Folder name (inside '+(appState.selectedNestedFolder||category)+')')||'').trim().replace(/[\/]+/g,'-');if(!leaf)return;const name=appState.selectedNestedFolder?appState.selectedNestedFolder+'/'+leaf:leaf;const row={grade:appState.grade,stream:getEffectiveStream(appState.grade),subject:appState.selectedSubject,category,name,created_by:appState.profile.id||null};try{const {error}=await sb.from('curriculum_folders').insert(row);if(error)throw error;await loadEduFolders();appState.selectedNestedFolder=name;refreshUploadNestedFolderOptions();renderSubfolderBar();renderCurriculumFiles();showToast('Folder created inside current folder');}catch(e){showToast(e.message||'Folder creation failed. Run the included SQL setup.');}}
+    async function adminDeleteNestedFolder(id,name){if(appState.profile?.role!=='admin')return;if(!confirm('Delete folder “'+name+'” and all nested files?'))return;const folder=appState.folders.find(f=>String(f.id)===String(id));if(!folder)return;const fullPath=folder.category+'/'+folder.name;try{const matching=appState.files.filter(f=>Number(f.grade)===Number(folder.grade)&&f.stream===folder.stream&&f.subject===folder.subject&&(f.subfolder===fullPath||String(f.subfolder||'').startsWith(fullPath+'/')));for(const f of matching){if(f.storage_path)await sb.storage.from(CURRICULUM_BUCKET).remove([f.storage_path]);await sb.from('curriculum_files').delete().eq('id',f.id);}const descendants=appState.folders.filter(f=>String(f.grade)===String(folder.grade)&&f.stream===folder.stream&&f.subject===folder.subject&&f.category===folder.category&&(f.name===folder.name||f.name.startsWith(folder.name+'/')));for(const child of descendants){const {error}=await sb.from('curriculum_folders').delete().eq('id',child.id);if(error)throw error;}await loadCurriculumFiles();await loadEduFolders();if(appState.selectedNestedFolder===folder.name||String(appState.selectedNestedFolder||'').startsWith(folder.name+'/'))appState.selectedNestedFolder=null;renderSubfolderBar();renderCurriculumFiles();showToast('Folder and nested contents deleted');}catch(e){showToast(e.message||'Could not delete folder');}}
+    function setNestedFolderParent(){if(!appState.selectedNestedFolder){return;}const parts=appState.selectedNestedFolder.split('/');parts.pop();appState.selectedNestedFolder=parts.length?parts.join('/'):null;renderSubfolderBar();renderCurriculumFiles();}
+    function setNestedFolder(name){appState.selectedNestedFolder=name;renderSubfolderBar();renderCurriculumFiles();}
+    function refreshUploadNestedFolderOptions(){const category=document.getElementById('uploadSubfolder')?.value,field=document.getElementById('uploadNestedFolderField'),select=document.getElementById('uploadNestedFolder');if(!field||!select)return;const active=['Weekly Exam','EUEE'].includes(category);field.style.display=active?'block':'none';if(!active){select.innerHTML='<option value="">No nested folder</option>';return;}const grade=Number(document.getElementById('uploadGrade').value),stream=(grade===11||grade===12)?document.getElementById('uploadStream').value:'General',subject=document.getElementById('uploadSubject').value;const folders=appState.folders.filter(f=>Number(f.grade)===grade&&f.stream===stream&&f.subject===subject&&f.category===category);select.innerHTML='<option value="">Choose folder (optional)</option>'+folders.map(f=>`<option value="${escapeText(f.name)}">${escapeText(f.name)}</option>`).join('');if(appState.selectedNestedFolder)select.value=appState.selectedNestedFolder;}
+    const originalRefreshUploadSubjectOptions=refreshUploadSubjectOptions;
+    refreshUploadSubjectOptions=function(){originalRefreshUploadSubjectOptions();refreshUploadNestedFolderOptions();};
+    const originalLoadCurriculumFiles=loadCurriculumFiles;
+    loadCurriculumFiles=async function(){await originalLoadCurriculumFiles();await loadEduFolders();refreshUploadNestedFolderOptions();renderSubfolderBar();};
+    const originalSetActiveGrade=setActiveGrade;
+    setActiveGrade=function(grade){appState.selectedNestedFolder=null;return originalSetActiveGrade(grade);};
+    document.getElementById('uploadSubject')?.addEventListener('change',refreshUploadNestedFolderOptions);
+    document.getElementById('uploadNestedFolder')?.addEventListener('change',()=>{});
+    setActiveSubfolder=function(folderName){appState.selectedSubfolder=folderName;appState.selectedNestedFolder=null;syncSubfolderPageVisibility();renderSubfolderBar();renderCurriculumFiles();scrollContentToTop();};
+    openFolderList=function(folderName){setActiveSubfolder(folderName);};
+    handleSubfolderBack=function(){if(appState.selectedNestedFolder){const parts=appState.selectedNestedFolder.split('/');parts.pop();appState.selectedNestedFolder=parts.length?parts.join('/'):null;}else if(appState.selectedSubfolder){appState.selectedSubfolder=null;}else{clearSelectedSubject();return;}syncSubfolderPageVisibility();renderSubfolderBar();renderCurriculumFiles();scrollContentToTop();};
+    renderSubfolderBar=function(){const bar=document.getElementById('subfolderBar'),tools=document.getElementById('folderAdminTools');syncSubfolderPageVisibility();if(!appState.selectedSubject){bar.classList.remove('visible');bar.innerHTML='';if(tools)tools.style.display='none';return;}bar.classList.add('visible');const isAdmin=appState.profile?.role==='admin',cat=appState.selectedSubfolder;
+      if(!cat){if(tools)tools.style.display='none';bar.innerHTML=SUBJECT_SUBFOLDERS.map(folder=>{const count=appState.files.filter(f=>Number(f.grade)===appState.grade&&f.stream===getEffectiveStream(appState.grade)&&f.subject===appState.selectedSubject&&normalizeSubfolder(f.subfolder)===folder).length;const icon=folder==='Book'?'menu_book':folder==='Short Note'?'sticky_note_2':folder==='Weekly Exam'?'quiz':'school';return `<button type="button" class="subfolder-chip" onclick="setActiveSubfolder('${escapeText(folder)}')"><span class="subfolder-chip-left"><span class="material-icons-round" style="font-size:18px;color:var(--icon-ink);">${icon}</span><span>${escapeText(t(folder))}</span></span><span style="font-size:11px;color:var(--text-secondary)">${count}</span></button>`;}).join('');return;}
+      const nestedCat=['Weekly Exam','EUEE'].includes(cat);if(tools)tools.style.display=(isAdmin&&nestedCat)?'flex':'none';let html=`<div class="folder-path-row"><button type="button" onclick="setActiveSubfolder(null)">All folders</button> / ${escapeText(cat)}${appState.selectedNestedFolder?' / '+escapeText(appState.selectedNestedFolder):''}</div>`;
+      if(nestedCat){const parent=appState.selectedNestedFolder||'',prefix=parent?parent+'/':'';const folders=appState.folders.filter(f=>Number(f.grade)===appState.grade&&f.stream===getEffectiveStream(appState.grade)&&f.subject===appState.selectedSubject&&f.category===cat&&String(f.name).startsWith(prefix)&&String(f.name).slice(prefix.length).length>0&&!String(f.name).slice(prefix.length).includes('/'));html+=folders.map(f=>{const leaf=String(f.name).split('/').pop();return `<div class="folder-card"><button type="button" class="folder-card-main" style="border:0;background:transparent;color:inherit;flex:1;text-align:left;" onclick="setNestedFolder('${escapeText(f.name)}')"><span class="material-icons-round" style="color:var(--coral);">folder</span><span>${escapeText(leaf)}</span></button>${isAdmin?`<button type="button" class="folder-delete" onclick="adminDeleteNestedFolder('${escapeText(f.id)}','${escapeText(f.name)}')" aria-label="Delete folder"><span class="material-icons-round">delete</span></button>`:''}</div>`;}).join('');if(!folders.length)html+='<div class="empty-state">No folders yet. Admin can create one.</div>';bar.innerHTML=html;return;}bar.innerHTML=html;};
+    // Download controls and in-app reader override the original external Open link.
+    const originalRenderCurriculumFiles=renderCurriculumFiles;
+    renderCurriculumFiles=function(){originalRenderCurriculumFiles();const stack=document.getElementById('filesStack');if(!stack)return;const rows=[...stack.querySelectorAll('.file-row')];rows.forEach((row,i)=>{const title=row.querySelector('.file-title')?.textContent||'',file=appState.files.find(f=>f.file_name===title&&Number(f.grade)===appState.grade&&(!appState.selectedSubject||f.subject===appState.selectedSubject));if(!file)return;const url=file.file_url||'',category=String(file.subfolder||'Short Note').split('/')[0];const actions=row.querySelector('.file-actions-row');if(!actions)return;actions.innerHTML=`<button type="button" class="open-file-btn" onclick="openCurriculumFile('${escapeText(url)}','${escapeText(title)}')"><span class="material-icons-round" style="font-size:15px;">visibility</span><span>Open</span></button>${['Book','Short Note'].includes(category)?`<button type="button" class="open-file-btn" title="Download" aria-label="Download" onclick="downloadCurriculumFile('${escapeText(url)}','${escapeText(title)}')"><span class="material-icons-round" style="font-size:17px;">download</span></button>`:''}${actions.querySelector('.delete-file-btn')?actions.querySelector('.delete-file-btn').outerHTML:''}`;});
+      if(appState.selectedNestedFolder&&appState.selectedSubfolder){const path=appState.selectedSubfolder+'/'+appState.selectedNestedFolder;const matched=appState.files.filter(f=>Number(f.grade)===appState.grade&&f.stream===getEffectiveStream(appState.grade)&&f.subject===appState.selectedSubject&&f.subfolder===path);const filtered=matched;const currentRows=[...stack.querySelectorAll('.file-row')];if(!filtered.length&&currentRows.length===0)stack.innerHTML='<div class="empty-state">No files in this folder yet.</div>';}
+    };
+    const originalHandleUpload=handleCurriculumUpload;
+    handleCurriculumUpload=async function(event){const category=document.getElementById('uploadSubfolder')?.value||'Short Note',nested=document.getElementById('uploadNestedFolder')?.value||'';if(['Weekly Exam','EUEE'].includes(category)&&nested){document.getElementById('uploadSubfolder').dataset.nestedPath=category+'/'+nested;try{await originalHandleUpload(event);}finally{document.getElementById('uploadSubfolder').dataset.nestedPath='';}}else await originalHandleUpload(event);};
+    // Portrait lock is best-effort; browsers may require fullscreen/user activation.
+    function requestEduPortrait(){try{if(screen.orientation?.lock)screen.orientation.lock('portrait').catch(()=>{});}catch(e){}}
+    const originalOpenMainWorkspace=openMainWorkspace;
+    openMainWorkspace=async function(profile){requestEduPortrait();await originalOpenMainWorkspace(profile);};
+  </script>
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
+  <style>
+    /* Fixed workspace chrome: only the center content scrolls. */
+    body.main-active .topbar { flex:0 0 auto !important; position:relative !important; z-index:60 !important; }
+    body.main-active .scroll-area { flex:1 1 0 !important; height:0 !important; min-height:0 !important; overflow-y:auto !important; }
+    body.main-active .bottom-tabbar { flex:0 0 auto !important; position:relative !important; bottom:auto !important; z-index:60 !important; }
+    .subfolder-chip { display:flex !important; align-items:center !important; gap:8px !important; }
+    .subfolder-chip .folder-download-action { flex:0 0 34px; width:34px; height:34px; display:grid; place-items:center; border:1px solid var(--border-subtle); border-radius:10px; background:var(--bg-card); color:var(--coral); margin-left:auto; }
+    .folder-card .folder-download-action { flex:0 0 36px; width:36px; height:36px; display:grid; place-items:center; border:1px solid var(--border-subtle); border-radius:10px; background:var(--bg-card); color:var(--coral); }
+    .folder-card-main { flex:1; min-height:36px; }
+    .file-actions-row { display:flex; align-items:center; justify-content:flex-end; gap:7px; flex-wrap:nowrap; }
+    .file-actions-row .open-file-btn { min-width:38px; justify-content:center; }
+    .reader-toolbar { position:sticky; top:0; z-index:5; flex:0 0 auto; }
+    .reader-status { position:sticky; top:0; z-index:4; background:var(--bg-surface); border-bottom:1px solid var(--border-subtle); line-height:1.45; }
+    .reader-content { overscroll-behavior:contain; }
+    .reader-info { font-size:11px; opacity:.85; overflow-wrap:anywhere; }
+    .reader-content .docx-render { max-width:900px; margin:0 auto; padding:20px; background:#fff; color:#222; line-height:1.65; border-radius:8px; }
+    .reader-content .docx-render img { max-width:100%; }
+    .folder-download-action:disabled { opacity:.5; }
+  </style>
+  <script>
+  (function(){
+    const oldOpen=window.openCurriculumFile;
+    const oldOpenPdf=window.openEduPdf;
+    const oldOpenHtml=window.openEduHtml;
+    let readerFileMeta=null;
+    function extOf(name){return (String(name||'').split(/[?#]/)[0].split('.').pop()||'').toLowerCase();}
+    function bytesText(n){n=Number(n);if(!Number.isFinite(n)||n<0)return 'Size not available';if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';return (n/1048576).toFixed(2)+' MB';}
+    function findFileById(id){return (appState.files||[]).find(f=>String(f.id||f.storage_path||f.file_name)===String(id));}
+    function findFile(url,name){return (appState.files||[]).find(f=>f.file_url===url&&f.file_name===name)|| (appState.files||[]).find(f=>f.file_url===url);}
+    function setReaderInfo(text){const el=document.getElementById('eduReaderStatus');if(el)el.textContent=text;}
+    function showReader(url,name,fileId){const f=fileId?findFileById(fileId):findFile(url,name);readerFileMeta=f||null;const size=f?.file_size??f?.size_bytes??f?.size??null;const type=extOf(name||url).toUpperCase()||'FILE';setReaderInfo(`${name||'File'} • ${type} • ${size!=null?bytesText(size):'Size will be detected while loading'}`);}
+    window.openCurriculumFile=function(url,name,fileId){
+      const ext=extOf(name||url);showReader(url,name,fileId);
+      if(ext==='pdf'){window.openEduPdf(url,name);return;}
+      if(ext==='html'||ext==='htm'){window.openEduHtml(url,name);return;}
+      if(ext==='docx'){window.openEduDocx(url,name);return;}
+      // Unknown uploaded formats still open inside the app reader, never a new tab.
+      window.openEduHtml(url,name);
+    };
+    window.openEduPdf=function(url,name){
+      if(!window.pdfjsLib){document.getElementById('eduReaderOverlay').classList.add('open');document.getElementById('eduReaderTitle').textContent=name||'PDF Reader';document.getElementById('eduReaderContent').innerHTML='<div class="empty-state">PDF engine could not load. Check internet and try again.</div>';return;}
+      eduReaderMode='pdf';eduReaderUrl=url;eduReaderName=name||'PDF Reader';eduPdfScale=1;eduPdfRotation=0;eduPdfDoc=null;
+      document.getElementById('eduReaderTitle').textContent=eduReaderName;setReaderInfo(`${eduReaderName} • PDF • Loading document info…`);document.getElementById('eduReaderContent').innerHTML='';document.getElementById('eduReaderOverlay').classList.add('open');
+      try{eduPdfMarks[eduReaderUrl]=JSON.parse(localStorage.getItem(eduMarkKey())||'[]')}catch{eduPdfMarks[eduReaderUrl]=[]}
+      pdfjsLib.getDocument({url,withCredentials:false}).promise.then(async doc=>{eduPdfDoc=doc;let meta='';try{const m=await doc.getMetadata();const info=m?.info||{};const title=info.Title&&info.Title!=='Untitled'?info.Title:'';const author=info.Author||'';meta=[title,author].filter(Boolean).join(' • ');}catch{};const f=readerFileMeta;let size=f?.file_size??f?.size_bytes??null;if(size==null){try{const r=await fetch(url,{method:'HEAD'});size=r.headers.get('content-length');}catch{}}setReaderInfo(`${eduReaderName} • PDF • ${doc.numPages} pages${size!=null?' • '+bytesText(size):''}${meta?' • '+meta:''}`);renderEduPdfPages();}).catch(err=>{setReaderInfo(`${eduReaderName} • PDF • Could not load. Check file access/CORS, then download for offline reading.`);console.error(err);});
+    };
+    window.openEduHtml=function(url,name){eduReaderMode='html';eduReaderUrl=url;eduReaderName=name||'HTML Reader';document.getElementById('eduReaderTitle').textContent=eduReaderName;setReaderInfo(`${eduReaderName} • HTML document • Loading`);const box=document.getElementById('eduReaderContent');box.innerHTML='';const frame=document.createElement('iframe');frame.title=eduReaderName;frame.setAttribute('sandbox','allow-scripts allow-forms allow-popups');frame.src=url;box.appendChild(frame);document.getElementById('eduReaderOverlay').classList.add('open');frame.addEventListener('load',()=>setReaderInfo(`${eduReaderName} • HTML document • Opened inside EduApp`),{once:true});};
+    window.openEduDocx=async function(url,name){eduReaderMode='docx';eduReaderUrl=url;eduReaderName=name||'Word document';document.getElementById('eduReaderTitle').textContent=eduReaderName;setReaderInfo(`${eduReaderName} • DOCX • Loading`);const box=document.getElementById('eduReaderContent');box.innerHTML='';document.getElementById('eduReaderOverlay').classList.add('open');try{const res=await fetch(url);if(!res.ok)throw new Error('File fetch failed');const blob=await res.blob();setReaderInfo(`${eduReaderName} • DOCX • ${bytesText(blob.size)}`);if(!window.mammoth)throw new Error('DOCX reader library unavailable');const result=await mammoth.convertToHtml({arrayBuffer:await blob.arrayBuffer()});const article=document.createElement('article');article.className='docx-render';article.innerHTML=result.value;box.appendChild(article);}catch(e){setReaderInfo(`${eduReaderName} • DOCX • Preview unavailable; use Download to read offline`);box.innerHTML='<div class="empty-state">Could not preview this Word file in EduApp. Download it and open with a document reader.</div>';}};
+    // Android share/open intent for the requested PDF Reader app. The user may choose it in the system sheet.
+    window.openInAndroidPdfReader=async function(url,name){try{const response=await fetch(url);if(!response.ok)throw new Error('Could not retrieve PDF');const blob=await response.blob();const file=new File([blob],name||'document.pdf',{type:'application/pdf'});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:name||'PDF'});return;} }catch(e){if(e.name==='AbortError')return;}try{const u=new URL(url,location.href);location.href=`intent://${u.host}${u.pathname}${u.search}#Intent;scheme=${u.protocol.replace(':','')};type=application/pdf;package=pdf.reader.pdfviewer.pdfeditor;end`;}catch{showToast('Download the PDF first, then open it from your PDF Reader app.');}};
+    // Add external-reader action only for PDFs in the internal reader toolbar.
+    const toolbar=document.querySelector('.reader-toolbar');if(toolbar&&!toolbar.querySelector('#openWithPdfReader')){const b=document.createElement('button');b.id='openWithPdfReader';b.type='button';b.textContent='Open with PDF Reader';b.title='Send PDF to the installed PDF Reader app';b.onclick=()=>{if(eduReaderMode==='pdf')openInAndroidPdfReader(eduReaderUrl,eduReaderName);else showToast('This action is available for PDF files.');};toolbar.appendChild(b);}
+    async function downloadBlob(blob,name){const objectUrl=URL.createObjectURL(blob);const a=document.createElement('a');a.href=objectUrl;a.download=name||'download';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(objectUrl),3000);}
+    window.downloadCurriculumFolderZip=async function(category,nestedName){const prefix=nestedName?category+'/'+nestedName:category;const files=(appState.files||[]).filter(f=>Number(f.grade)===Number(appState.grade)&&f.stream===getEffectiveStream(appState.grade)&&f.subject===appState.selectedSubject&&(String(f.subfolder||'Short Note')===prefix||String(f.subfolder||'').startsWith(prefix+'/')));if(!files.length){showToast('This folder has no downloadable files yet');return;}if(!window.JSZip){showToast('Folder ZIP tool could not load. Download files one by one instead.');files.forEach((f,i)=>setTimeout(()=>downloadCurriculumFile(f.file_url,f.file_name),i*350));return;}const btns=[...document.querySelectorAll('.folder-download-action')];btns.forEach(b=>b.disabled=true);showToast('Preparing offline folder…');try{const zip=new JSZip();for(let i=0;i<files.length;i++){const f=files[i];const response=await fetch(f.file_url);if(!response.ok)throw new Error('Could not download '+f.file_name);const blob=await response.blob();const sub=String(f.subfolder||prefix).replace(prefix,'').replace(/^\//,'');const zipPath=[sub,f.file_name].filter(Boolean).join('/');zip.file(zipPath,blob);if(i%3===0)setReaderInfo(`Preparing folder ZIP • ${i+1}/${files.length}`);}const blob=await zip.generateAsync({type:'blob'});const safe=(nestedName||category).replace(/[^a-z0-9-_]+/gi,'_');await downloadBlob(blob,`Grade${appState.grade}_${safe}_offline.zip`);showToast(`Offline ZIP ready • ${files.length} files`);}catch(e){showToast('ZIP blocked by storage access. Starting individual downloads…');files.forEach((f,i)=>setTimeout(()=>downloadCurriculumFile(f.file_url,f.file_name),i*450));}finally{btns.forEach(b=>b.disabled=false);}};
+    // Decorate each subject folder with a right-side offline ZIP control.
+    const baseRenderFolders=window.renderSubfolderBar;
+    window.renderSubfolderBar=function(){baseRenderFolders();const bar=document.getElementById('subfolderBar');if(!bar||!appState.selectedSubject||appState.selectedSubfolder)return;bar.querySelectorAll('.subfolder-chip').forEach(chip=>{const label=chip.querySelector('.subfolder-chip-left span:last-child')?.textContent?.trim();const category=SUBJECT_SUBFOLDERS.find(x=>t(x)===label)||label;if(!['Book','Short Note','Weekly Exam','EUEE'].includes(category)||chip.querySelector('.folder-download-action'))return;const btn=document.createElement('button');btn.type='button';btn.className='folder-download-action';btn.title='Download folder for offline use';btn.setAttribute('aria-label','Download folder for offline use');btn.innerHTML='<span class="material-icons-round">download</span>';btn.dataset.offlineCategory=category;btn.dataset.offlineNested='';btn.onclick=e=>{e.stopPropagation();downloadCurriculumFolderZip(category,'');};chip.appendChild(btn);});};
+    // Nested EUEE / Weekly Exam folders each get their own offline download button.
+    const renderWithNestedDownloads=window.renderSubfolderBar;window.renderSubfolderBar=function(){renderWithNestedDownloads();const bar=document.getElementById('subfolderBar');if(!bar||!['Weekly Exam','EUEE'].includes(appState.selectedSubfolder))return;bar.querySelectorAll('.folder-card').forEach(card=>{const main=card.querySelector('.folder-card-main');if(!main||card.querySelector('.folder-download-action'))return;const full=main.getAttribute('onclick')?.match(/setNestedFolder\('([^']*)'\)/)?.[1];if(!full)return;const btn=document.createElement('button');btn.type='button';btn.className='folder-download-action';btn.title='Download this folder for offline use';btn.setAttribute('aria-label','Download folder');btn.innerHTML='<span class="material-icons-round">download</span>';btn.dataset.offlineCategory=appState.selectedSubfolder;btn.dataset.offlineNested=full;btn.onclick=e=>{e.stopPropagation();downloadCurriculumFolderZip(appState.selectedSubfolder,full);};card.appendChild(btn);});};
+    // Keep original row actions, but use the exact file ID and open in-app.
+    const baseRenderFiles=window.renderCurriculumFiles;window.renderCurriculumFiles=function(){baseRenderFiles();const stack=document.getElementById('filesStack');if(!stack)return;let shown=0;stack.querySelectorAll('.file-row').forEach(row=>{const f=findFileById(row.dataset.fileId);if(!f)return;const category=String(f.subfolder||'Short Note').split('/')[0],actions=row.querySelector('.file-actions-row');if(appState.selectedNestedFolder&&appState.selectedSubfolder){const exact=appState.selectedSubfolder+'/'+appState.selectedNestedFolder;row.style.display=(String(f.subfolder||'')===exact)?'':'none';if(row.style.display!=='none')shown++;}else{row.style.display='';shown++;}if(!actions)return;const del=actions.querySelector('.delete-file-btn')?.outerHTML||'';actions.innerHTML=`<button type="button" class="open-file-btn edu-read-file" title="Read inside EduApp"><span class="material-icons-round" style="font-size:16px">menu_book</span><span>Read</span></button>${['Book','Short Note'].includes(category)?`<button type="button" class="open-file-btn edu-download-file" title="Download for offline use" aria-label="Download for offline use"><span class="material-icons-round" style="font-size:18px">download</span></button>`:''}${del}`;const readBtn=actions.querySelector('.edu-read-file');if(readBtn)readBtn.onclick=()=>openCurriculumFile(f.file_url,f.file_name,f.id||f.storage_path||f.file_name);const dlBtn=actions.querySelector('.edu-download-file');if(dlBtn)dlBtn.onclick=()=>downloadCurriculumFile(f.file_url,f.file_name);});if(appState.selectedNestedFolder&&shown===0&&!stack.querySelector('.empty-state')){const e=document.createElement('div');e.className='empty-state';e.textContent='No files in this folder yet.';stack.appendChild(e);}};
+    // Reader download/share controls and file details.
+    const readerToolbar=document.querySelector('.reader-toolbar');if(readerToolbar&&!readerToolbar.querySelector('#readerShareFile')){const b=document.createElement('button');b.id='readerShareFile';b.textContent='Download';b.onclick=()=>readerDownloadCurrent();readerToolbar.appendChild(b);}
+  })();
+  </script>
+
+<style>
+/* APK-only offline save: buttons cache inside the WebView instead of triggering downloads */
+.folder-download-action.is-offline,.edu-download-file.is-offline{color:var(--success,#22c55e)!important;border-color:rgba(34,197,94,.45)!important}
+.edu-download-file .material-icons-round{pointer-events:none}
+</style>
+<script>
+(function(){
+  'use strict';
+  const DB_NAME='EduAppOfflineFiles_v1', DB_STORE='saved_files';
+  let dbPromise;
+  function openDB(){
+    if(dbPromise)return dbPromise;
+    dbPromise=new Promise((resolve,reject)=>{
+      if(!window.indexedDB){reject(new Error('Offline storage is not supported in this WebView'));return;}
+      const req=indexedDB.open(DB_NAME,1);
+      req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(DB_STORE))db.createObjectStore(DB_STORE,{keyPath:'key'});};
+      req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('Could not open offline storage'));
+    });return dbPromise;
+  }
+  function tx(mode,work){return openDB().then(db=>new Promise((resolve,reject)=>{const t=db.transaction(DB_STORE,mode),s=t.objectStore(DB_STORE);let result;try{result=work(s);}catch(e){reject(e);return;}t.oncomplete=()=>resolve(result);t.onerror=()=>reject(t.error||new Error('Offline storage failed'));t.onabort=()=>reject(t.error||new Error('Offline storage aborted'));}));}
+  function fileKey(f){return String(f?.id||f?.storage_path||f?.file_id||f?.file_url||f?.file_name||'');}
+  function getSaved(key){return openDB().then(db=>new Promise((resolve,reject)=>{const r=db.transaction(DB_STORE,'readonly').objectStore(DB_STORE).get(String(key));r.onsuccess=()=>resolve(r.result||null);r.onerror=()=>reject(r.error);}));}
+  function saveBlob(f,blob){const record={key:fileKey(f),name:f.file_name||f.name||'file',type:blob.type||f.mime_type||'',size:blob.size,blob,savedAt:Date.now(),url:f.file_url||''};return tx('readwrite',s=>s.put(record));}
+  function formatSize(n){if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';return (n/1048576).toFixed(2)+' MB';}
+  function toast(msg){if(typeof showToast==='function')showToast(msg);else console.log(msg);}
+  async function cacheOne(f,onProgress){
+    const key=fileKey(f);if(!key)throw new Error('File has no stable ID');
+    const already=await getSaved(key);if(already?.blob){onProgress&&onProgress('saved');return already;}
+    if(!f.file_url)throw new Error('File URL is missing');
+    const res=await fetch(f.file_url);if(!res.ok)throw new Error('Could not fetch '+(f.file_name||'file')+' ('+res.status+')');
+    const blob=await res.blob();if(!blob.size)throw new Error('The file is empty');
+    await saveBlob(f,blob);onProgress&&onProgress('saved');return {key,name:f.file_name||f.name,blob,size:blob.size};
+  }
+  function getCurrentFile(url,name,id){
+    const files=window.appState?.files||[];
+    return (id&&files.find(f=>String(f.id||f.storage_path||f.file_id||f.file_name)===String(id)))||files.find(f=>f.file_url===url&&f.file_name===name)||files.find(f=>f.file_url===url)||{file_url:url,file_name:name,id:id};
+  }
+  const oldOpen=window.openCurriculumFile;
+  window.openCurriculumFile=async function(url,name,id){
+    const f=getCurrentFile(url,name,id),key=fileKey(f);
+    try{
+      const saved=await getSaved(key);
+      if(saved?.blob){const localUrl=URL.createObjectURL(saved.blob);window.__eduOfflineObjectUrls=window.__eduOfflineObjectUrls||[];window.__eduOfflineObjectUrls.push(localUrl);oldOpen.call(window,localUrl,saved.name||name,id);return;}
+    }catch(e){console.warn('Offline cache lookup:',e);}
+    if(!navigator.onLine){toast('This file is not saved for offline use yet. Connect to the internet and tap the download icon.');return;}
+    oldOpen.call(window,url,name,id);
+  };
+  window.readerDownloadCurrent=async function(){
+    if(!window.eduReaderUrl&&!window.eduReaderName){toast('Open a file first');return;}
+    const f=getCurrentFile(window.eduReaderUrl,window.eduReaderName,null);
+    try{await cacheOne(f);toast('Saved inside EduApp for offline use • '+(window.eduReaderName||f.file_name||'file'));refreshOfflineIcons();}
+    catch(e){toast('Could not save offline: '+(e.message||'network or storage error'));}
+  };
+  window.downloadCurriculumFile=async function(url,name,id){
+    const f=getCurrentFile(url,name,id);let btn=null;
+    try{
+      btn=[...document.querySelectorAll('.edu-download-file')].find(b=>b.closest('.file-row')?.dataset.fileId===String(f.id||f.storage_path||f.file_name));
+      if(btn){btn.disabled=true;btn.querySelector('.material-icons-round').textContent='sync';}
+      await cacheOne(f);
+      if(btn){btn.classList.add('is-offline');btn.querySelector('.material-icons-round').textContent='offline_pin';btn.title='Saved inside EduApp for offline use';}
+      toast('Saved inside EduApp for offline use • '+(name||f.file_name||'file'));
+      refreshOfflineIcons();
+    }catch(e){toast('Could not save offline: '+(e.message||'storage or network error'));console.error(e);}
+    finally{if(btn)btn.disabled=false;}
+  };
+  function folderFiles(category,nestedName){
+    const prefix=nestedName?category+'/'+nestedName:category;
+    return (window.appState?.files||[]).filter(f=>Number(f.grade)===Number(appState.grade)&&f.stream===getEffectiveStream(appState.grade)&&f.subject===appState.selectedSubject&&(String(f.subfolder||'Short Note')===prefix||String(f.subfolder||'').startsWith(prefix+'/')));
+  }
+  window.downloadCurriculumFolderZip=async function(category,nestedName){
+    const files=folderFiles(category,nestedName);if(!files.length){toast('This folder has no files to save');return;}
+    const buttons=[...document.querySelectorAll('.folder-download-action')];buttons.forEach(b=>{b.disabled=true;b.querySelector('.material-icons-round').textContent='sync';});
+    let saved=0,failed=0;toast('Saving folder inside EduApp…');
+    for(let i=0;i<files.length;i++){
+      try{await cacheOne(files[i]);saved++;}catch(e){failed++;console.warn('Offline save failed',files[i]?.file_name,e);}
+      buttons.forEach(b=>{b.title=`Saving offline ${i+1}/${files.length}`;});
+      const status=document.getElementById('eduReaderStatus');if(status)status.textContent=`Saving folder offline • ${i+1}/${files.length}`;
+    }
+    buttons.forEach(b=>{b.disabled=false;b.classList.toggle('is-offline',failed===0);b.querySelector('.material-icons-round').textContent=failed===0?'offline_pin':'download';b.title=failed===0?'All files saved inside EduApp for offline use':`${saved} saved, ${failed} failed`;});
+    toast(failed?`Saved ${saved}/${files.length} files inside EduApp. ${failed} failed.`:`Folder saved inside EduApp • ${saved} files available offline`);
+    refreshOfflineIcons();
+  };
+  async function refreshOfflineIcons(){
+    for(const b of document.querySelectorAll('.edu-download-file')){
+      const row=b.closest('.file-row'),f=row&&getCurrentFile('', '', row.dataset.fileId);if(!f)continue;
+      try{const saved=await getSaved(fileKey(f));if(saved?.blob){b.classList.add('is-offline');b.title='Saved inside EduApp for offline use';b.querySelector('.material-icons-round').textContent='offline_pin';}}catch{}
+    }
+    for(const b of document.querySelectorAll('.folder-download-action')){
+      // Folder controls retain the download icon until all matching items are verified saved.
+      const category=b.dataset.offlineCategory,nested=b.dataset.offlineNested||'';if(!category)continue;
+      const fs=folderFiles(category,nested);if(!fs.length)continue;let all=true;
+      for(const f of fs){try{if(!(await getSaved(fileKey(f)))?.blob){all=false;break;}}catch{all=false;break;}}
+      if(all){b.classList.add('is-offline');b.querySelector('.material-icons-round').textContent='offline_pin';b.title='All files saved inside EduApp for offline use';}
+    }
+  }
+  window.refreshEduAppOfflineIcons=refreshOfflineIcons;
+  document.addEventListener('DOMContentLoaded',refreshOfflineIcons);
+  // When returning to a subject/folder, reflect saved-file state on the current controls.
+  const watch=new MutationObserver(()=>{if(!watch._timer){watch._timer=setTimeout(()=>{watch._timer=null;refreshOfflineIcons();},250);}});
+  watch.observe(document.body,{childList:true,subtree:true});
+  window.addEventListener('online',()=>toast('Internet restored. Saved EduApp files remain available offline.'));
+})();
+</script>
+
 </body>
 </html>
